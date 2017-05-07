@@ -1,0 +1,59 @@
+#! /bin/bash
+repo_dir=$HOME/.vim/pack/git-plugins
+silent=false
+
+
+####
+# This handles the optional arguments
+###
+getopt --test > /dev/null
+if [[ $? -ne 4 ]]; then
+    echo "`getopt --test` failed in this environment."
+    exit 1
+fi
+
+SHORT=sd
+LONG=silent,git-dir:
+PARSED=`getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"`
+
+if [[ $? -ne 0 ]]; then
+		echo "Failed to parse arguments"
+    exit 2
+fi
+
+eval set -- "$PARSED"
+while true; do
+	case "$1" in 
+		-d|--git-dir)
+			repo_dir=$2
+			shift 2
+			;;
+		-s|--silent)
+			silent=true
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+		*)
+			shift
+			;;
+	esac
+done
+
+start_opt=$1
+repo_target=$2
+dest_name=$3
+
+echo $start_opt
+echo $repo_target
+echo $dest_name
+
+if [ "$silent" = true ]; then 
+	git clone -C $repo_dir/$start_opt $repo_target $dest_name > /dev/null
+else
+	git clone -C $repo_dir/$start_opt $repo_target $dest_name
+fi
+
+exit $?

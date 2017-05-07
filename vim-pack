@@ -1,0 +1,23 @@
+#! /bin/bash
+silencer=$( > /dev/null )
+
+#if [ "$#" -ne 1 ]; then
+#	COMMAND="invalid"
+#else 
+	COMMAND=$1
+#fi
+
+shift
+
+echo "Command: $COMMAND"
+if [ "$COMMAND" == "update" ]; then
+	vim-pack-update $@
+elif [ "$COMMAND" == "get"  ]; then
+	vim-pack-get $@
+elif [ "$COMMAND" == "remove"  ]; then
+	vim-pack-remove $@
+else
+	echo " This should be some sort of usage statement"
+	exit 1
+fi
+exit $?
