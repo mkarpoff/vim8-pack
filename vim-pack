@@ -5,11 +5,11 @@ shift
 
 echo "Command: $COMMAND"
 if [ "$COMMAND" == "update" ]; then
-	vim-pack-update $@
+	vim-pack-update "$@"
 elif [ "$COMMAND" == "get"  ]; then
-	vim-pack-get $@
+	vim-pack-get "$@"
 elif [ "$COMMAND" == "remove"  ]; then
-	vim-pack-remove $@
+	vim-pack-remove "$@"
 else
 	echo " This should be some sort of usage statement"
 	exit 1

@@ -7,13 +7,13 @@ silent=false
 ###
 getopt --test > /dev/null
 if [[ $? -ne 4 ]]; then
-    echo "`getopt --test` failed in this environment."
+    echo "$(getopt --test) failed in this environment."
     exit 1
 fi
 
 SHORT=sd
 LONG=silent,git-dir:
-PARSED=`getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"`
+PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
 
 if [[ $? -ne 0 ]]; then
 		echo "Failed to parse arguments"
@@ -37,23 +37,23 @@ while true; do
 			break
 			;;
 		*)
-			echo "Unknown argument: " $1
+			echo "Unknown argument: " "$1"
 			exit 3
 			;;
 	esac
 done
 
 if [ "$silent" = true ]; then 
-	for i in $(ls $repo_dir); do 
-		for j in $(ls $repo_dir/$i); do 
-			git -C $repo_dir/$i/$j pull > /dev/null
+	for i in $repo_dir/*/; do 
+		for j in $i/*/; do 
+			git -C "$j" pull > /dev/null
 		done
 	done
 else
-	for i in $(ls $repo_dir); do 
-		for j in $(ls $repo_dir/$i); do 
-			echo "$repo_dir/$i/$j"
-			git -C $repo_dir/$i/$j pull
+	for i in $repo_dir/*; do 
+		for j in $i/*; do 
+			echo "$j"
+			git -C "$j" pull
 		done
 	done
 fi
