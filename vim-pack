@@ -1,12 +1,6 @@
 #! /bin/bash
-silencer=$( > /dev/null )
 
-#if [ "$#" -ne 1 ]; then
-#	COMMAND="invalid"
-#else 
-	COMMAND=$1
-#fi
-
+COMMAND=$1
 shift
 
 echo "Command: $COMMAND"
