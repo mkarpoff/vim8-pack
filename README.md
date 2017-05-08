@@ -18,3 +18,52 @@ git pull
 ```
 
 This avoids having to move the files after setup
+
+## How to use
+
+### To download a new package  
+
+```bash
+vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>] 
+```
+`-s| --silent` to hide output that normally goes to stdout
+
+`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`$HOME/.vim/pack/git-plugins`
+
+
+### To download a new package  
+
+```bash
+vim-pack get [-s|--silent] [-d <dir>| --git-dir=<dir>] <opt|start> <URL> [<new name>]
+```
+`-s| --silent` to hide output that normally goes to stdout
+
+`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`$HOME/.vim/pack/git-plugins`
+
+use `opt` or `start` to specify whether it should be a optional package or 
+loaded for every time if you use `opt` you will need to specifically add the 
+package using the vim 8 command `packadd <package name>`
+
+`<URL>` specifies the directory the package should be pulled from. Internally 
+this is a git clone command
+
+`[<new name>]` can be used if you would like to load the package under a 
+different name
+
+### To remove a new package  
+
+```bash
+vim-pack remove [-s|--silent] [-d <dir>| --git-dir=<dir>] [<opt|start>] [<name>]
+```
+
+`-s| --silent` to hide output that normally goes to stdout
+
+`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`$HOME/.vim/pack/git-plugins`
+
+Use `opt` or `start` to specify whether the package is an optional package or 
+loaded for every time. If neither are supplied then the both will be removed.
+
+`[<name>]` specifies the package name 
