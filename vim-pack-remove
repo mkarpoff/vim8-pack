@@ -46,18 +46,18 @@ if [[ $# -eq 2 ]]; then
 	start_opt=$1
 	pack_name=$2
 	if [ "$silent" = true ]; then 
-		rm "$repo_dir/$start_opt/$pack_name" > /dev/null
+		rm -rf "$repo_dir/$start_opt/$pack_name" > /dev/null
 	else
-		rm "$repo_dir/$start_opt/$pack_name"
+		rm -rf "$repo_dir/$start_opt/$pack_name"
 	fi
 elif [[ $# -eq 1 ]]; then
 	pack_name=$1
 	if [ "$silent" = true ]; then 
-		rm "$repo_dir/start/$pack_name" > /dev/null
-		rm "$repo_dir/opt/$pack_name" > /dev/null
+		rm -rf "$repo_dir/start/$pack_name" > /dev/null
+		rm -rf "$repo_dir/opt/$pack_name" > /dev/null
 	else
-		rm "$repo_dir/start/$pack_name"
-		rm "$repo_dir/opt/$pack_name"
+		rm -rf "$repo_dir/start/$pack_name"
+		rm -rf "$repo_dir/opt/$pack_name"
 	fi
 fi
 
