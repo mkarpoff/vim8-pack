@@ -51,9 +51,9 @@ echo "$repo_target"
 echo "$dest_name"
 
 if [ "$silent" = true ]; then 
-	git clone -C "$repo_dir/$start_opt" "$repo_target" "$dest_name" > /dev/null
+	git -C clone "$repo_dir/$start_opt" "$repo_target" "$dest_name" > /dev/null
 else
-	git clone -C "$repo_dir/$start_opt" "$repo_target" "$dest_name"
+	git -C clone "$repo_dir/$start_opt" "$repo_target" "$dest_name"
 fi
 
 exit $?
