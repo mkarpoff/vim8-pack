@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 repo_dir=$HOME/.vim/pack/git-plugins
 silent=false
 
