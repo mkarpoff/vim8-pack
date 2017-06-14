@@ -2,6 +2,15 @@
 Some simple tools to maintain and update git based packages for vim 8
 
 ## How to install
+### Recomended Way
+Requires python3.4
+```bash
+git clone https://github.com/mkarpoff/vim8-pack.git ~/.local/src/vim8-pack
+cd ~/.local/src/vim8-pack
+./linkall.py
+```
+Make sure ~/.local/bin is added to you path
+### Recomended Way \# 2
 clone the files into whatever director you'd like
 
 ```bash
@@ -18,6 +27,9 @@ git pull
 ```
 
 This avoids having to move the files after setup
+
+### Alternative way
+Clone wherever and make sure the files are in your path
 
 ## How to use
 
