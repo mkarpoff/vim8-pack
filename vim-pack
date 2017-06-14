@@ -10,6 +10,10 @@ elif [ "$COMMAND" == "get"  ]; then
 	vim-pack-get "$@"
 elif [ "$COMMAND" == "remove"  ]; then
 	vim-pack-remove "$@"
+elif [ "$COMMAND" == "export"  ]; then
+	vim-pack-export "$@"
+elif [ "$COMMAND" == "import"  ]; then
+	vim-pack-import "$@"
 else
 	echo " This should be some sort of usage statement"
 	exit 1

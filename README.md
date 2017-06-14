@@ -79,3 +79,34 @@ Use `opt` or `start` to specify whether the package is an optional package or
 loaded for every time. If neither are supplied then the both will be removed.
 
 `[<name>]` specifies the package name 
+
+### To export package lists
+
+```bash
+vim-pack export [-s|--silent] [-d <dir>| --git-dir=<dir>] [<file>]
+```
+
+`-s| --silent` to hide output that normally goes to stdout
+
+`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`$HOME/.vim/pack/git-plugins`
+
+If `<file>` is provided then the list of packages will be exported to a file following the INI file format. If the `-s`
+or `--silent` option arguments are given then an output file is mandatory. This is useful for transferring 
+configurations across machines and for listing all installed packages
+
+### To import package lists
+
+```bash
+vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
+```
+
+`-s| --silent` to hide output that normally goes to stdout
+
+`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`$HOME/.vim/pack/git-plugins`
+
+`<file>` is the name of the required INI format file. This can be generated using `vim-pack export` this is useful for
+transferring configurations between machines.
+
+
