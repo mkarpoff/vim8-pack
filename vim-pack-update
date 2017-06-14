@@ -7,23 +7,23 @@ silent=false
 ###
 getopt --test > /dev/null
 if [[ $? -ne 4 ]]; then
-    echo "$(getopt --test) failed in this environment."
-    exit 1
+	echo "$(getopt --test) failed in this environment."
+	exit 1
 fi
 
-SHORT=sd
-LONG=silent,git-dir:
+SHORT=sdo:
+LONG=silent,git-dir:output:
 PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
 
 if [[ $? -ne 0 ]]; then
-		echo "Failed to parse arguments"
-    exit 2
+	echo "Failed to parse arguments"
+	exit 2
 fi
 
 
 eval set -- "$PARSED"
 while true; do
-	case "$1" in 
+	case "$1" in
 		-d|--git-dir)
 			repo_dir=$2
 			shift 2
@@ -31,6 +31,10 @@ while true; do
 		-s|--silent)
 			silent=true
 			shift
+			;;
+		-o|--output)
+			outfile=$2
+			shift 2
 			;;
 		--)
 			shift
@@ -43,15 +47,15 @@ while true; do
 	esac
 done
 
-if [ "$silent" = true ]; then 
-	for i in $repo_dir/*/; do 
-		for j in $i/*/; do 
+if [ "$silent" = true ]; then
+	for i in {opt,start}; do
+		for j in $repo_dir/$i/*/; do
 			git -C "$j" pull > /dev/null
 		done
 	done
 else
-	for i in $repo_dir/*; do 
-		for j in $i/*; do 
+	for i in {opt,start}; do
+		for j in $repo_dir/$i/*; do
 			echo "$j"
 			git -C "$j" pull
 		done
