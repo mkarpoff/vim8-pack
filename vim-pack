@@ -11,7 +11,14 @@ elif [ "$COMMAND" == "get"  ]; then
 elif [ "$COMMAND" == "remove"  ]; then
 	vim-pack-remove "$@"
 else
-	echo " This should be some sort of usage statement"
+	echo "usage: vim-pack <command> [<args>]"
+	echo
+	echo "Comands:"
+	echo "    get        Used to download a package from a git based source"
+	echo "    remove     Used to remove a package"
+	echo "    update     Used to udpate all the packages"
+	echo "    import     Import package list"
+	echo "    export     Export a package list"
 	exit 1
 fi
 exit $?
