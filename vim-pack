@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 COMMAND=$1
 shift
@@ -10,6 +10,10 @@ elif [ "$COMMAND" == "get"  ]; then
 	vim-pack-get "$@"
 elif [ "$COMMAND" == "remove"  ]; then
 	vim-pack-remove "$@"
+elif [ "$COMMAND" == "export"  ]; then
+	vim-pack-export "$@"
+elif [ "$COMMAND" == "import"  ]; then
+	vim-pack-import "$@"
 else
 	echo "usage: vim-pack <command> [<args>]"
 	echo

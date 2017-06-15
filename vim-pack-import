@@ -1,4 +1,6 @@
 #! /usr/bin/env bash
+my_dir="$(dirname $(readlink "$0"))"
+source "$my_dir/bash_ini_parser/read_ini.sh"
 repo_dir=$HOME/.vim/pack/git-plugins
 silent=false
 
@@ -37,24 +39,24 @@ while true; do
 			break
 			;;
 		*)
-			shift
+			break
 			;;
 	esac
 done
 
-start_opt=$1
-repo_target=$2
-dest_name=$3
+import_file=$1
+read_ini $import_file
 
-echo "$start_opt"
-echo "$repo_target"
-echo "$dest_name"
-
-cd "$repo_dir/$start_opt"
-if [ "$silent" = true ]; then 
-	git clone $repo_target $dest_name > /dev/null
-else
-	git clone $repo_target $dest_name
-fi
+for sec in ${INI__ALL_SECTIONS}; do
+	v="INI__${sec}__url"
+	repo_target=${!v}
+	v="INI__${sec}__dir"
+	dest_name=${!v}
+	if [ "$silent" = true ]; then 
+		git clone $repo_target $repo_dir/$dest_name > /dev/null
+	else
+		git clone $repo_target $repo_dir/$dest_name
+	fi
+done
 
 exit $?

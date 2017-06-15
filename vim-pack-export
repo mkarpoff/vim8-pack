@@ -1,0 +1,73 @@
+#! /usr/bin/env bash
+repo_dir=$HOME/.vim/pack/git-plugins
+silent=false
+
+####
+# This handles the optional arguments
+###
+ofile_specified=false
+getopt --test > /dev/null
+if [[ $? -ne 4 ]]; then
+	echo "$(getopt --test) failed in this environment."
+	exit 1
+fi
+
+SHORT=sd
+LONG=silent,git-dir:
+PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
+
+if [[ $? -ne 0 ]]; then
+	echo "Failed to parse arguments"
+	exit 2
+fi
+
+
+eval set -- "$PARSED"
+while true; do
+	case "$1" in
+		-d|--git-dir)
+			repo_dir=$2
+			shift 2
+			;;
+		-s|--silent)
+			silent=true
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+		*)
+			break;
+			;;
+	esac
+done
+if [ ! -z "$1" ]; then
+	outfile=$1
+	ofile_specified=true
+fi
+if [ "$silent" = true ] && [ "$ofile_specified" = false ]; then
+	echo "Cannot export silent without a output file specified"
+	echo "Provide an output file"
+	exit 1
+fi
+
+for i in {opt,start}; do
+	repos_folders=$(ls $repo_dir/$i/)
+	for j in $repos_folders; do
+		url=$(git -C "$repo_dir/$i/$j" remote get-url origin)
+		if [ "$ofile_specified" = true ]; then
+			echo "[$j]" >> "$outfile"
+			echo "	dir = $i/$j" >> "$outfile"
+			echo "	url = $url"	>> "$outfile"
+		fi
+		if [ "$silent" = false ]; then
+			echo "[$j]"
+			echo "	dir = $i/$j"
+			echo "	url = $url"
+		fi
+	done
+done
+
+
+exit 0;

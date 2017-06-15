@@ -2,6 +2,15 @@
 Some simple tools to maintain and update git based packages for vim 8
 
 ## How to install
+### Recomended Way
+Requires python3.4
+```bash
+git clone https://github.com/mkarpoff/vim8-pack.git ~/.local/src/vim8-pack
+cd ~/.local/src/vim8-pack
+./linkall.py
+```
+Make sure ~/.local/bin is added to you path
+### Recomended Way \# 2
 clone the files into whatever director you'd like
 
 ```bash
@@ -18,6 +27,9 @@ git pull
 ```
 
 This avoids having to move the files after setup
+
+### Alternative way
+Clone wherever and make sure the files are in your path
 
 ## How to use
 
@@ -67,3 +79,34 @@ Use `opt` or `start` to specify whether the package is an optional package or
 loaded for every time. If neither are supplied then the both will be removed.
 
 `[<name>]` specifies the package name 
+
+### To export package lists
+
+```bash
+vim-pack export [-s|--silent] [-d <dir>| --git-dir=<dir>] [<file>]
+```
+
+`-s| --silent` to hide output that normally goes to stdout
+
+`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`$HOME/.vim/pack/git-plugins`
+
+If `<file>` is provided then the list of packages will be exported to a file following the INI file format. If the `-s`
+or `--silent` option arguments are given then an output file is mandatory. This is useful for transferring 
+configurations across machines and for listing all installed packages
+
+### To import package lists
+
+```bash
+vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
+```
+
+`-s| --silent` to hide output that normally goes to stdout
+
+`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`$HOME/.vim/pack/git-plugins`
+
+`<file>` is the name of the required INI format file. This can be generated using `vim-pack export` this is useful for
+transferring configurations between machines.
+
+
