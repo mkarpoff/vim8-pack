@@ -11,8 +11,8 @@ if [[ $? -ne 4 ]]; then
 	exit 1
 fi
 
-SHORT=sdo:
-LONG=silent,git-dir:output:
+SHORT=sd:o:
+LONG=silent,git-dir:,output:
 PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
 
 if [[ $? -ne 0 ]]; then
