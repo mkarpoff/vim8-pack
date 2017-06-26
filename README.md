@@ -19,8 +19,12 @@ ln -s <PATH>/<TO>/<Repo>/vim-pack vim-pack
 ln -s <PATH>/<TO>/<Repo>/vim-pack-get vim-pack-get
 ln -s <PATH>/<TO>/<Repo>/vim-pack-update vim-pack-update
 ln -s <PATH>/<TO>/<Repo>/vim-pack-remove vim-pack-remove
+ln -s <PATH>/<TO>/<Repo>/vim-pack-import vim-pack-inport
+ln -s <PATH>/<TO>/<Repo>/vim-pack-export vim-pack-export
 ```
-I suggest using symbolic links so that if you'd like to keep up to date with changes then all you would have to do is cd to where you cloned the repo and type.
+
+I suggest using symbolic links so that if you'd like to keep up to date with changes then all you would have to do is cd
+to where you cloned the repo and type.
 
 ```bash
 git pull
@@ -29,14 +33,14 @@ git pull
 This avoids having to move the files after setup
 
 ### Alternative way
-Clone wherever and make sure the files are in your path
+Clone wherever and place the files somewhere in your path
 
 ## How to use
 
-### To download a new package  
+### To download a new package
 
 ```bash
-vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>] 
+vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>]
 ```
 `-s| --silent` to hide output that normally goes to stdout
 
@@ -44,7 +48,7 @@ vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>]
 `$HOME/.vim/pack/git-plugins`
 
 
-### To download a new package  
+### To download a new package
 
 ```bash
 vim-pack get [-s|--silent] [-d <dir>| --git-dir=<dir>] <opt|start> <URL> [<new name>]
@@ -54,17 +58,17 @@ vim-pack get [-s|--silent] [-d <dir>| --git-dir=<dir>] <opt|start> <URL> [<new n
 `-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
 `$HOME/.vim/pack/git-plugins`
 
-use `opt` or `start` to specify whether it should be a optional package or 
-loaded for every time if you use `opt` you will need to specifically add the 
+use `opt` or `start` to specify whether it should be a optional package or
+loaded for every time if you use `opt` you will need to specifically add the
 package using the vim 8 command `packadd <package name>`
 
-`<URL>` specifies the directory the package should be pulled from. Internally 
+`<URL>` specifies the directory the package should be pulled from. Internally
 this is a git clone command
 
-`[<new name>]` can be used if you would like to load the package under a 
+`[<new name>]` can be used if you would like to load the package under a
 different name
 
-### To remove a new package  
+### To remove a new package
 
 ```bash
 vim-pack remove [-s|--silent] [-d <dir>| --git-dir=<dir>] [<opt|start>] [<name>]
@@ -75,10 +79,10 @@ vim-pack remove [-s|--silent] [-d <dir>| --git-dir=<dir>] [<opt|start>] [<name>]
 `-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
 `$HOME/.vim/pack/git-plugins`
 
-Use `opt` or `start` to specify whether the package is an optional package or 
+Use `opt` or `start` to specify whether the package is an optional package or
 loaded for every time. If neither are supplied then the both will be removed.
 
-`[<name>]` specifies the package name 
+`[<name>]` specifies the package name
 
 ### To export package lists
 
@@ -92,13 +96,14 @@ vim-pack export [-s|--silent] [-d <dir>| --git-dir=<dir>] [<file>]
 `$HOME/.vim/pack/git-plugins`
 
 If `<file>` is provided then the list of packages will be exported to a file following the INI file format. If the `-s`
-or `--silent` option arguments are given then an output file is mandatory. This is useful for transferring 
+or `--silent` option arguments are given then an output file is mandatory. This is useful for transferring
 configurations across machines and for listing all installed packages
 
 ### To import package lists
 
 ```bash
 vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
+vim-pack list   [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
 ```
 
 `-s| --silent` to hide output that normally goes to stdout
@@ -109,4 +114,8 @@ vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
 `<file>` is the name of the required INI format file. This can be generated using `vim-pack export` this is useful for
 transferring configurations between machines.
 
-
+## Completion
+To make this easier to use bash completion functionality has been added. This program is designed to be easily used
+without `sudo` so by default it uses the user level completion configuration and not the system wide completion
+configuration. This means that it will place the completion script in `~/.bash-completion.d/` and if there is no
+`~/.bash_compltion` it will add a link for one.

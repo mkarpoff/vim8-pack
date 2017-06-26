@@ -1,14 +1,159 @@
 #! /usr/bin/env bash
 
+repo_dir=$HOME/.vim/pack/git-plugins
+
+contains_single() {
+	local array="$1[@]"
+	local seeking=$2
+	local in=0
+	for element in "${!array}"; do
+		if [[ $element == $seeking ]]; then
+			in=1
+			break
+		fi
+	done
+	return $in
+}
+
+contains() {
+	local var
+	local in=0
+	for var in ${@:2}; do
+		contains_single $1 $var
+		if [ "$?" -eq 1 ]; then
+			in=1
+			break
+		fi
+	done
+	return $in
+}
+
 _vim_pack_tab_complete() {
 	local cur prev opts
-	COMPREPLY=()
+	compopt -o nospace
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
-	words="get list remove update export import"
-	
-	COMPREPLY=( $(compgen -W "${words}" -- ${cur}) )
+	words=""
+	if [ "$COMP_CWORD" -eq "1" ]; then
+		words="get list remove update export import"
+		COMPREPLY=( $(compgen -W "${words}" -- ${cur}) )
+		return 0;
+	else
+		if [[ ${prev} == "--"* && ${cur} == "=" ]] ; then
+			compopt -o filenames
+			COMPREPLY=(*)
+			return 0
+		fi
+		# Handle --xxxxx=path
+		if [[ ${prev} == '=' ]] ; then
+			# Unescape space
+			cur=${cur//\\ / }
+			# Expand tilder to $HOME
+			[[ ${cur} == "~/"* ]] && cur=${cur/\~/$HOME}
+			# Show completion if path exist (and escape spaces)
+			compopt -o filenames
+			local files=("${cur}"*)
+			[[ -e ${files[0]} ]] && COMPREPLY=( "${files[@]// /\ }" )
+			return 0
+		fi
+
+		contains COMP_WORDS "--git-dir" "-d"
+		if [ "$?" -eq 0 ]; then
+			words="$words -d --git-dir="
+		else
+			if [[ $prev == "-d" ]];then
+				cur=${cur//\\ / }
+				# Expand tilder to $HOME
+				[[ ${cur} == "~/"* ]] && cur=${cur/\~/$HOME}
+				# Show completion if path exist (and escape spaces)
+				compopt -o filenames
+				local files=("${cur}"*)
+				[[ -e ${files[0]} ]] && COMPREPLY=( "${files[@]// /\ }" )
+				return 0
+			fi
+			next=0
+			for var in ${COMP_WORDS[*]}; do
+				if [ $next -eq 1 ]; then
+					next=2
+				elif [ $next -eq 2 ]; then
+					repo_dir=$var				
+				fi
+				if [[ $var == "-d" ]]; then 
+					next=2
+				fi
+				if [[ $var == "--git-dir" ]]; then 
+					next=1
+				fi
+			done
+		fi
+		contains COMP_WORDS "--silent" "-s"
+		if [ "$?" -eq 0 ]; then
+			words="$words -s --silent"
+		fi
+		case "${COMP_WORDS[1]}" in
+			get)
+				contains COMP_WORDS "opt" "start"
+				if [ "$?" -eq 0 ]; then
+					words="$words opt start"
+				fi
+				;;
+			list)
+				if [[ "$(compgen -W '${words}' -- ${cur})" == "" ]]; then
+					cur=${cur//\\ / }
+					# Expand tilder to $HOME
+					[[ ${cur} == "~/"* ]] && cur=${cur/\~/$HOME}
+					# Show completion if path exist (and escape spaces)
+					compopt -o filenames
+					local files=("${cur}"*)
+					[[ -e ${files[0]} ]] && COMPREPLY=( "${files[@]// /\ }" )
+					return 0
+				fi
+				;;
+			remove)
+				contains COMP_WORDS "opt"
+				local opt=$?
+				contains COMP_WORDS "start"
+				local start=$?
+				if [ "$opt" -eq 1 ] ; then
+					words="$words $(ls $repo_dir/opt)"
+				elif [ "$start" -eq 1 ]; then
+					words="$words $(ls $repo_dir/start)"
+				else
+					words="$words opt start"
+				fi
+				;;
+			update)
+				;;
+			export)
+				if [[ "$(compgen -W '${words}' -- ${cur})" == "" ]]; then
+					cur=${cur//\\ / }
+					# Expand tilder to $HOME
+					[[ ${cur} == "~/"* ]] && cur=${cur/\~/$HOME}
+					# Show completion if path exist (and escape spaces)
+					compopt -o filenames
+					local files=("${cur}"*)
+					[[ -e ${files[0]} ]] && COMPREPLY=( "${files[@]// /\ }" )
+					return 0
+				fi
+				;;
+			import)
+				if [[ "$(compgen -W '${words}' -- ${cur})" == "" ]]; then
+					cur=${cur//\\ / }
+					# Expand tilder to $HOME
+					[[ ${cur} == "~/"* ]] && cur=${cur/\~/$HOME}
+					# Show completion if path exist (and escape spaces)
+					compopt -o filenames
+					local files=("${cur}"*)
+					[[ -e ${files[0]} ]] && COMPREPLY=( "${files[@]// /\ }" )
+					return 0
+				fi
+				;;
+			*)
+		esac
+		COMPREPLY=( $(compgen -W "${words}" -- ${cur}) )
+	fi
 	return 0
 }
+
 complete -F _vim_pack_tab_complete vim-pack
