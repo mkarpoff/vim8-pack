@@ -1,0 +1,14 @@
+#! /usr/bin/env bash
+
+_vim_pack_tab_complete() {
+	local cur prev opts
+	COMPREPLY=()
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+	words="get list remove update export import"
+	
+	COMPREPLY=( $(compgen -W "${words}" -- ${cur}) )
+	return 0
+}
+complete -F _vim_pack_tab_complete vim-pack

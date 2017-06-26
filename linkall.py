@@ -6,12 +6,14 @@ name="name"
 target="target"
 
 files=[
-    {name:"vim-pack",       target:"~/.local/bin/vim-pack"},
-    {name:"vim-pack-get",   target:"~/.local/bin/vim-pack-get"},
-    {name:"vim-pack-remove",target:"~/.local/bin/vim-pack-remove"},
-    {name:"vim-pack-update",target:"~/.local/bin/vim-pack-update"},
-    {name:"vim-pack-export",target:"~/.local/bin/vim-pack-export"},
-    {name:"vim-pack-import",target:"~/.local/bin/vim-pack-import"},
+    {name:"vim-pack",         target:"~/.local/bin/vim-pack"},
+    {name:"vim-pack-get",     target:"~/.local/bin/vim-pack-get"},
+    {name:"vim-pack-remove",  target:"~/.local/bin/vim-pack-remove"},
+    {name:"vim-pack-update",  target:"~/.local/bin/vim-pack-update"},
+    {name:"vim-pack-export",  target:"~/.local/bin/vim-pack-export"},
+    {name:"vim-pack-import",  target:"~/.local/bin/vim-pack-import"},
+    {name:"bash_completion",  target:"~/.bash_completion"},
+    {name:"vim-pack-complete",target:"~/.bash_completion.d/vim-pack-complete"},
     ]
 
 def link(filename, target):
@@ -35,11 +37,11 @@ def link(filename, target):
         target_path.parent.mkdir(parents=True);
     target_path.symlink_to(source_path.resolve())
     print("[%16s] -> [%s] symlink created successfully" %(source_path, target_path))
-    
+
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
-    
+
     "question" is a string that is presented to the user.
     "default" is the presumed answer if the user just hits <Enter>.
         It must be "yes" (the default), "no" or None (meaning

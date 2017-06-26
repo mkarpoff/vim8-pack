@@ -12,6 +12,8 @@ elif [ "$COMMAND" == "remove"  ]; then
 	vim-pack-remove "$@"
 elif [ "$COMMAND" == "export"  ]; then
 	vim-pack-export "$@"
+elif [ "$COMMAND" == "list"  ]; then
+	vim-pack-export "$@"
 elif [ "$COMMAND" == "import"  ]; then
 	vim-pack-import "$@"
 else
@@ -19,6 +21,7 @@ else
 	echo
 	echo "Comands:"
 	echo "    get        Used to download a package from a git based source"
+	echo "    list       List installed packages"
 	echo "    remove     Used to remove a package"
 	echo "    update     Used to udpate all the packages"
 	echo "    import     Import package list"
