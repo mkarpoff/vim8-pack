@@ -183,13 +183,14 @@ function read_ini()
 		fi
 
 		# Section marker?
-		if [[ "${line}" =~ ^\[[a-zA-Z0-9_\-]{1,}\]$ ]]
+		if [[ "${line}" =~ ^\[[a-zA-Z0-9_\-\.]{1,}\]$ ]]
 		then
 
 			# Set SECTION var to name of section (strip [ and ] from section marker)
 			SECTION="${line#[}"
 			SECTION="${SECTION%]}"
 			SECTION="${SECTION//-/___45___}"
+			SECTION="${SECTION//./___46___}"
 			eval "${INI_ALL_SECTION}=\"\${${INI_ALL_SECTION}# } $SECTION\""
 			((SECTIONS_NUM++))
 
