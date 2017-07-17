@@ -11,8 +11,8 @@ if [[ $? -ne 4 ]]; then
 	exit 1
 fi
 
-SHORT=sd:
-LONG=silent,git-dir:
+SHORT=sd:o:
+LONG=silent,git-dir:,output:
 PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
 
 if [[ $? -ne 0 ]]; then
@@ -32,6 +32,10 @@ while true; do
 			silent=true
 			shift
 			;;
+		-o|--output)
+			outfile=$2
+			shift 2
+			;;
 		--)
 			shift
 			break
@@ -43,36 +47,19 @@ while true; do
 	esac
 done
 
-update_count=$(( 0 ))
-update_list=""
 if [ "$silent" = true ]; then
 	for i in {opt,start}; do
 		for j in $repo_dir/$i/*/; do
-			git -C "$j" fetch > /dev/null
-			_ahead=$(git -C "$j" rev-list "HEAD..@{u}" | wc -l)
-			if (( _ahead > 0 )); then
-				update_count=$(( update_count + 1 ))
-				update_list="$update_list ${j#"$repo_dir/$i/"}"
-			fi
+			git -C "$j" pull > /dev/null
 		done
 	done
 else
 	for i in {opt,start}; do
 		for j in $repo_dir/$i/*; do
 			echo "$j"
-			git -C "$j" fetch
-			_ahead=$(git -C "$j" rev-list "HEAD..@{u}" | wc -l)
-			if (( _ahead > 0 )); then
-				update_count=$(( update_count + 1 ))
-				update_list="$update_list ${j#"$repo_dir/$i/"}"
-			fi
+			git -C "$j" pull
 		done
 	done
 fi
-if (( update_count > 0 )); then
-	echo "Updates available for:"
-	echo "  $update_list"
-else
-	echo "No updates available"
-fi
+
 exit 0;

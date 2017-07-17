@@ -6,7 +6,11 @@ shift
 echo "Command: $COMMAND"
 if [ "$COMMAND" == "update" ]; then
 	vim-pack-update "$@"
+elif [ "$COMMAND" == "upgrade" ]; then
+	vim-pack-upgrade "$@"
 elif [ "$COMMAND" == "get"  ]; then
+	vim-pack-get "$@"
+elif [ "$COMMAND" == "install"  ]; then
 	vim-pack-get "$@"
 elif [ "$COMMAND" == "remove"  ]; then
 	vim-pack-remove "$@"
@@ -21,9 +25,11 @@ else
 	echo
 	echo "Comands:"
 	echo "    get        Used to download a package from a git based source"
+	echo "    install    Used to download a package from a git based source"
 	echo "    list       List installed packages"
 	echo "    remove     Used to remove a package"
-	echo "    update     Used to udpate all the packages"
+	echo "    update     Used to find all the packages that have updates"
+	echo "    upgrade    Used to update all the packages"
 	echo "    import     Import package list"
 	echo "    export     Export a package list"
 	exit 1

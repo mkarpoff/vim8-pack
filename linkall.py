@@ -10,6 +10,7 @@ files=[
     {name:"vim-pack-get",     target:"~/.local/bin/vim-pack-get"},
     {name:"vim-pack-remove",  target:"~/.local/bin/vim-pack-remove"},
     {name:"vim-pack-update",  target:"~/.local/bin/vim-pack-update"},
+    {name:"vim-pack-upgrade",  target:"~/.local/bin/vim-pack-upgrade"},
     {name:"vim-pack-export",  target:"~/.local/bin/vim-pack-export"},
     {name:"vim-pack-import",  target:"~/.local/bin/vim-pack-import"},
     {name:"bash_completion",  target:"~/.bash_completion"},
