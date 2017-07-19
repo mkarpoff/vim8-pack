@@ -1,5 +1,6 @@
 # vim8-pack
-Some simple tools to maintain and update git based packages for vim 8
+Some simple tools to maintain and update git based packages for vim 8. Development is ongoing so while it functions,
+there are bugs and changes that are ongoing. Feel free to open issues. I'll get to them as I can.
 
 ## How to install
 ### Recomended Way
