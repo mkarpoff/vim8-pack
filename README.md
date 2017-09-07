@@ -1,5 +1,8 @@
 # vim8-pack
-Some simple tools to maintain and update git based packages for vim 8
+Some simple tools to maintain and update git based packages for vim 8. Currently it is for managing packages designed
+for vim 7 and earlier. This is because I have yet to find a package that properly conforms to the vim8 package standard.
+I intend tools for handling vim8 compatible packages as well. Development is ongoing so while it functions, there are
+bugs and changes that are ongoing. Feel free to open issues. I'll get to them as I can.
 
 ## How to install
 ### Recomended Way
@@ -18,6 +21,7 @@ cd <some director in you path>
 ln -s <PATH>/<TO>/<Repo>/vim-pack vim-pack
 ln -s <PATH>/<TO>/<Repo>/vim-pack-get vim-pack-get
 ln -s <PATH>/<TO>/<Repo>/vim-pack-update vim-pack-update
+ln -s <PATH>/<TO>/<Repo>/vim-pack-upgrade vim-pack-upgrade
 ln -s <PATH>/<TO>/<Repo>/vim-pack-remove vim-pack-remove
 ln -s <PATH>/<TO>/<Repo>/vim-pack-import vim-pack-inport
 ln -s <PATH>/<TO>/<Repo>/vim-pack-export vim-pack-export
@@ -37,7 +41,17 @@ Clone wherever and place the files somewhere in your path
 
 ## How to use
 
-### To download a new package
+### To upgrade package
+
+```bash
+vim-pack upgrade [-s|--silent] [-d <dir>| --git-dir=<dir>]
+```
+`-s| --silent` to hide output that normally goes to stdout
+
+`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`$HOME/.vim/pack/git-plugins`
+
+### To get list of upgrades for package
 
 ```bash
 vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>]
@@ -52,6 +66,7 @@ vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>]
 
 ```bash
 vim-pack get [-s|--silent] [-d <dir>| --git-dir=<dir>] <opt|start> <URL> [<new name>]
+vim-pack install [-s|--silent] [-d <dir>| --git-dir=<dir>] <opt|start> <URL> [<new name>]
 ```
 `-s| --silent` to hide output that normally goes to stdout
 
@@ -88,6 +103,7 @@ loaded for every time. If neither are supplied then the both will be removed.
 
 ```bash
 vim-pack export [-s|--silent] [-d <dir>| --git-dir=<dir>] [<file>]
+vim-pack list   [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
 ```
 
 `-s| --silent` to hide output that normally goes to stdout
@@ -103,7 +119,6 @@ configurations across machines and for listing all installed packages
 
 ```bash
 vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
-vim-pack list   [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
 ```
 
 `-s| --silent` to hide output that normally goes to stdout
