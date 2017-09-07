@@ -36,7 +36,7 @@ _vim_pack_tab_complete() {
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 	words=""
 	if [ "$COMP_CWORD" -eq "1" ]; then
-		words="get list remove update export import"
+		words="get install list remove update export import"
 		COMPREPLY=( $(compgen -W "${words}" -- ${cur}) )
 		return 0;
 	else
@@ -93,6 +93,12 @@ _vim_pack_tab_complete() {
 		fi
 		case "${COMP_WORDS[1]}" in
 			get)
+				contains COMP_WORDS "opt" "start"
+				if [ "$?" -eq 0 ]; then
+					words="$words opt start"
+				fi
+				;;
+			install)
 				contains COMP_WORDS "opt" "start"
 				if [ "$?" -eq 0 ]; then
 					words="$words opt start"
