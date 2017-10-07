@@ -8,15 +8,13 @@ if [ "$COMMAND" == "update" ]; then
 	vim-pack-update "$@"
 elif [ "$COMMAND" == "upgrade" ]; then
 	vim-pack-upgrade "$@"
-elif [ "$COMMAND" == "get"  ]; then
+elif [ "$COMMAND" == "get"  ] || [ "$COMMAND" == "install"  ]; then
 	vim-pack-get "$@"
 elif [ "$COMMAND" == "install"  ]; then
 	vim-pack-get "$@"
 elif [ "$COMMAND" == "remove"  ]; then
 	vim-pack-remove "$@"
-elif [ "$COMMAND" == "export"  ]; then
-	vim-pack-export "$@"
-elif [ "$COMMAND" == "list"  ]; then
+elif [ "$COMMAND" == "export"  ] || [ "$COMMAND" == "list"  ]; then
 	vim-pack-export "$@"
 elif [ "$COMMAND" == "import"  ]; then
 	vim-pack-import "$@"
