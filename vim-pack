@@ -18,6 +18,8 @@ elif [ "$COMMAND" == "export"  ] || [ "$COMMAND" == "list"  ]; then
 	vim-pack-export "$@"
 elif [ "$COMMAND" == "import"  ]; then
 	vim-pack-import "$@"
+elif [ "$COMMAND" == "sync"  ]; then
+	vim-pack-sync "$@"
 else
 	echo "usage: vim-pack <command> [<args>]"
 	echo
@@ -30,6 +32,8 @@ else
 	echo "    upgrade    Used to update all the packages"
 	echo "    import     Import package list"
 	echo "    export     Export a package list"
+	echo "    sync       Imports all files in a package list file and exports"
+	echo "               the package list to include missing installed packages"
 	exit 1
 fi
 exit $?

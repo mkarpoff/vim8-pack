@@ -36,7 +36,7 @@ _vim_pack_tab_complete() {
 	prev="${COMP_WORDS[COMP_CWORD-1]}"
 	words=""
 	if [ "$COMP_CWORD" -eq "1" ]; then
-		words="get install list remove update upgrade export import"
+		words="get install list remove update upgrade export import sync"
 		COMPREPLY=( $(compgen -W "${words}" -- ${cur}) )
 		return 0;
 	else
@@ -142,6 +142,17 @@ _vim_pack_tab_complete() {
 				fi
 				;;
 			import)
+				if [[ "$(compgen -W "${words}" -- "${cur}")" == "" ]]; then
+					# Expand tilder to $HOME
+					cur=$(realpath "${cur//\\ / }")
+					# Show completion if path exist (and escape spaces)
+					compopt -o filenames
+					local files=("${cur}"*)
+					[[ -e ${files[0]} ]] && COMPREPLY=( "${files[@]// /\ }" )
+					return 0
+				fi
+				;;
+			sync)
 				if [[ "$(compgen -W "${words}" -- "${cur}")" == "" ]]; then
 					# Expand tilder to $HOME
 					cur=$(realpath "${cur//\\ / }")
