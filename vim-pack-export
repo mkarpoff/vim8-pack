@@ -52,14 +52,15 @@ if [ "$silent" = true ] && [ "$ofile_specified" = false ]; then
 	exit 1
 fi
 
+repo_list=""
 for i in {opt,start}; do
 	repos_folders=$(ls $repo_dir/$i/)
 	for j in $repos_folders; do
 		url=$(git -C "$repo_dir/$i/$j" remote get-url origin)
 		if [ "$ofile_specified" = true ]; then
-			echo "[$j]" >> "$outfile"
-			echo "	dir = $i/$j" >> "$outfile"
-			echo "	url = $url"	>> "$outfile"
+			repo_list+="[$j]\n"
+			repo_list+="	dir = $i/$j\n"
+			repo_list+="	url = $url\n"
 		fi
 		if [ "$silent" = false ]; then
 			echo "[$j]"
@@ -68,6 +69,8 @@ for i in {opt,start}; do
 		fi
 	done
 done
-
+if [ "$ofile_specified" = true ]; then
+	echo -e "$repo_list" > "$outfile"
+fi
 
 exit 0;
