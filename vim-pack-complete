@@ -37,16 +37,16 @@ _vim_pack_tab_complete() {
 	words=""
 	if [ "$COMP_CWORD" -eq "1" ]; then
 		words="get install list remove update upgrade export import sync"
-		COMPREPLY=( $(compgen -W "${words}" -- ${cur}) )
+		COMPREPLY=( $(compgen -W "$words" -- "$cur") )
 		return 0;
 	else
-		if [[ ${prev} == "--"* && ${cur} == "=" ]] ; then
+		if [[ "$prev" == '--'* && "$cur" == '=' ]] ; then
 			compopt -o filenames
 			COMPREPLY=(*)
 			return 0
 		fi
 		# Handle --xxxxx=path
-		if [[ ${prev} == '=' ]] ; then
+		if [[ "$prev" == '=' ]] ; then
 			# Unescape space
 			cur=$(realpath "${cur//\\ / }")
 			# Show completion if path exist (and escape spaces)
@@ -59,7 +59,7 @@ _vim_pack_tab_complete() {
 		if contains COMP_WORDS "--git-dir" "-d"; then
 			words="$words -d --git-dir="
 		else
-			if [[ $prev == "-d" ]];then
+			if [[ "$prev" == "-d" ]];then
 				cur=$(realpath "${cur//\\ / }")
 				# Show completion if path exist (and escape spaces)
 				compopt -o filenames
@@ -69,41 +69,41 @@ _vim_pack_tab_complete() {
 			fi
 			next=0
 			for var in ${COMP_WORDS[*]}; do
-				if [ $next -eq 1 ]; then
+				if (( next == 1 )); then
 					next=2
-				elif [ $next -eq 2 ]; then
+				elif (( next == 2 )); then
 					repo_dir=$var
 				fi
-				if [[ $var == "-d" ]]; then
+				if [[ $var == '-d' ]]; then
 					next=2
 				fi
-				if [[ $var == "--git-dir" ]]; then
+				if [[ $var == '--git-dir' ]]; then
 					next=1
 				fi
 			done
 		fi
-		if contains COMP_WORDS "--silent" "-s"; then
+		if contains COMP_WORDS '--silent' '-s'; then
 			words="$words -s --silent"
 		fi
 		case "${COMP_WORDS[1]}" in
 			get)
-				if contains COMP_WORDS "opt" "start"; then
+				if contains COMP_WORDS 'opt' 'start'; then
 					words="$words opt start"
 				fi
 				;;
 			install)
-				if contains COMP_WORDS "opt" "start"; then
+				if contains COMP_WORDS 'opt' 'start'; then
 					words="$words opt start"
 				fi
 				;;
 			install)
-				contains COMP_WORDS "opt" "start"
-				if [ "$?" -eq 0 ]; then
+				contains COMP_WORDS 'opt' 'start'
+				if (( $? == 0 )); then
 					words="$words opt start"
 				fi
 				;;
 			list)
-				if [[ "$(compgen -W "${words}" -- "${cur}")" == "" ]]; then
+				if [[ "$(compgen -W "${words}" -- "${cur}")" == '' ]]; then
 					# Expand tilder to $HOME
 					cur=$(realpath "${cur//\\ / }")
 					# Show completion if path exist (and escape spaces)
@@ -114,13 +114,13 @@ _vim_pack_tab_complete() {
 				fi
 				;;
 			remove)
-				contains COMP_WORDS "opt"
+				contains COMP_WORDS 'opt'
 				local opt=$?
-				contains COMP_WORDS "start"
+				contains COMP_WORDS 'start'
 				local start=$?
-				if [ "$opt" -eq 1 ] ; then
+				if (( opt == 1 )) ; then
 					words="$words $(ls "$repo_dir/opt")"
-				elif [ "$start" -eq 1 ]; then
+				elif (( start == 1 )); then
 					words="$words $(ls "$repo_dir/start")"
 				else
 					words="$words opt start"
@@ -131,7 +131,7 @@ _vim_pack_tab_complete() {
 			upgrade)
 				;;
 			export)
-				if [[ "$(compgen -W "${words}" -- "${cur}")" == "" ]]; then
+				if [[ "$(compgen -W "${words}" -- "${cur}")" == '' ]]; then
 					# Expand tilder to $HOME
 					cur=$(realpath "${cur//\\ / }")
 					# Show completion if path exist (and escape spaces)

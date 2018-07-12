@@ -5,21 +5,19 @@ silent=false
 ####
 # This handles the optional arguments
 ###
-getopt --test > /dev/null
-if [[ $? -ne 4 ]]; then
-	echo "$(getopt --test) failed in this environment."
-	exit 1
-fi
-
 SHORT=sd:
 LONG=silent,git-dir:
-PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
-
-if [[ $? -ne 0 ]]; then
-	echo "Failed to parse arguments"
-	exit 2
+getopt --test > /dev/null
+if (( $? == 4 )); then
+	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
+else
+	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
 fi
 
+if (( $? != 0 )); then
+	echo 'Failed to parse arguments'
+	exit 2
+fi
 
 eval set -- "$PARSED"
 while true; do
@@ -45,7 +43,7 @@ done
 
 update_count=$(( 0 ))
 update_list=""
-if [ "$silent" = true ]; then
+if [[ "$silent" == true ]]; then
 	for i in {opt,start}; do
 		for j in $repo_dir/$i/*/; do
 			git -C "$j" fetch > /dev/null
@@ -61,7 +59,7 @@ else
 		for j in $repo_dir/$i/*; do
 			echo "$j"
 			git -C "$j" fetch
-			_ahead=$(git -C "$j" rev-list "HEAD..@{u}" | wc -l)
+			_ahead=$(git -C "$j" rev-list 'HEAD..@{u}' | wc -l)
 			if (( _ahead > 0 )); then
 				update_count=$(( update_count + 1 ))
 				update_list="$update_list ${j#"$repo_dir/$i/"}"
@@ -70,9 +68,9 @@ else
 	done
 fi
 if (( update_count > 0 )); then
-	echo "Updates available for:"
+	echo 'Updates available for:'
 	echo "  $update_list"
 else
-	echo "No updates available"
+	echo 'No updates available'
 fi
-exit 0;
+exit 0

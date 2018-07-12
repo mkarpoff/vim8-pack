@@ -6,24 +6,24 @@ silent=false
 ####
 # This handles the optional arguments
 ###
-getopt --test > /dev/null
-if [[ $? -ne 4 ]]; then
-    echo "$(getopt --test) failed in this environment."
-    exit 1
-fi
 
 SHORT=sd:
 LONG=silent,git-dir:
-PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
+getopt --test > /dev/null
+if (( $? == 4 )); then
+	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
+else
+	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
+fi
 
-if [[ $? -ne 0 ]]; then
-		echo "Failed to parse arguments"
-    exit 2
+if (( $? != 0 )); then
+	echo "Failed to parse arguments"
+	exit 2
 fi
 
 eval set -- "$PARSED"
 while true; do
-	case "$1" in 
+	case "$1" in
 		-d|--git-dir)
 			repo_dir=$2
 			shift 2
@@ -51,10 +51,10 @@ echo "$repo_target"
 echo "$dest_name"
 
 cd "$repo_dir/$start_opt"
-if [ "$silent" = true ]; then 
-	git clone $repo_target $dest_name > /dev/null
+if [[ "$silent" == true ]]; then
+	git clone "$repo_target" "$dest_name" > /dev/null
 else
-	git clone $repo_target $dest_name
+	git clone "$repo_target" "$dest_name"
 fi
 
 exit $?
