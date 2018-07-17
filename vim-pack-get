@@ -46,11 +46,14 @@ start_opt=$1
 repo_target=$2
 dest_name=$3
 
+if [[ -z $dest_name ]]; then
+	dest_name="$repo_dir/$start_opt/$(basename "$repo_target")"
+fi
+
 echo "$start_opt"
 echo "$repo_target"
 echo "$dest_name"
 
-cd "$repo_dir/$start_opt"
 if [[ "$silent" == true ]]; then
 	git clone "$repo_target" "$dest_name" > /dev/null
 else
