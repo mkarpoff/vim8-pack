@@ -86,7 +86,7 @@ different name
 ### To remove a new package
 
 ```bash
-vim-pack remove [-s|--silent] [-d <dir>| --git-dir=<dir>] [<opt|start>] [<name>]
+vim-pack remove [-s|--silent] [-d <dir>| --git-dir=<dir>] [<opt|start>] <name>
 ```
 
 `-s| --silent` to hide output that normally goes to stdout
@@ -95,7 +95,7 @@ vim-pack remove [-s|--silent] [-d <dir>| --git-dir=<dir>] [<opt|start>] [<name>]
 `$HOME/.vim/pack/git-plugins`
 
 Use `opt` or `start` to specify whether the package is an optional package or
-loaded for every time. If neither are supplied then the both will be removed.
+loaded for every time. If neither are supplied then it will attempt to remove from both.
 
 `[<name>]` specifies the package name
 

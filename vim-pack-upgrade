@@ -5,23 +5,29 @@ silent=false
 ####
 # This handles the optional arguments
 ###
-SHORT=sd:o:
-LONG=silent,git-dir:,output:
+SHORT=hsd:
+LONG=hsilent,git-dir:
 getopt --test > /dev/null
-if (( $? == 4 )); then
-	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
+supports_long_opts=$(( $? == 4 ))
+if [[ $supports_long_opts == true ]]; then
+	if PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		exit 2
+	fi
 else
-	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
-fi
-
-if (( $? != 0 )); then
-	echo 'Failed to parse arguments'
-	exit 2
+	if PARSED=$(getopt --options $SHORT --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		exit 2
+	fi
 fi
 
 eval set -- "$PARSED"
 while true; do
 	case "$1" in
+		-h|--help)
+			usage=true
+			break
+			;;
 		-d|--git-dir)
 			repo_dir=$2
 			shift 2
@@ -40,6 +46,27 @@ while true; do
 			;;
 	esac
 done
+if [[ $usage == true ]]; then
+	echo 'usage: vim-pack upgrade [-s|--silent] [-d <dir>| --git-dir=<dir>]'
+	echo
+	echo 'options:'
+	echo '    -s| --silent'
+	echo '        to hide output that normally goes to stdout'
+	echo
+	echo '    -d <dir> | --git-dir=<dir>'
+	echo '        specify the name for the package directory by default it is'
+	echo '        $home/.vim/pack/git-plugins'
+	echo
+	echo 'note:'
+	echo '       long options are only available with systems that have an enhanced version'
+	echo '       of getopt.'
+	if [[ $supports_long_opts == true ]]; then
+		echo '       this system does support long options'
+	else
+		echo '       this system does not support long options'
+	fi
+	exit 0
+fi
 
 if [[ "$silent" == true ]]; then
 	for i in {opt,start}; do

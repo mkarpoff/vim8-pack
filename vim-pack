@@ -33,6 +33,8 @@ else
 	echo '    export     Export a package list'
 	echo '    sync       Imports all files in a package list file and exports'
 	echo '               the package list to include missing installed packages'
+	echo
+	echo '               To find information on each command use the -h flag'
 	exit 1
 fi
 exit $?
