@@ -14,10 +14,10 @@ cd ~/.local/src/vim8-pack
 ```
 Make sure ~/.local/bin is added to you path
 ### Recomended Way \# 2
-clone the files into whatever director you'd like
+clone the files into whatever directory you'd like
 
 ```bash
-cd <some director in you path>
+cd <some directory in you path>
 ln -s <PATH>/<TO>/<Repo>/vim-pack vim-pack
 ln -s <PATH>/<TO>/<Repo>/vim-pack-get vim-pack-get
 ln -s <PATH>/<TO>/<Repo>/vim-pack-update vim-pack-update
@@ -48,7 +48,7 @@ vim-pack upgrade [-s|--silent] [-d <dir>| --git-dir=<dir>]
 ```
 `-s| --silent` to hide output that normally goes to stdout
 
-`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
 
 ### To get list of upgrades for package
@@ -58,7 +58,7 @@ vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>]
 ```
 `-s| --silent` to hide output that normally goes to stdout
 
-`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
 
 
@@ -70,7 +70,7 @@ vim-pack install [-s|--silent] [-d <dir>| --git-dir=<dir>] <opt|start> <URL> [<n
 ```
 `-s| --silent` to hide output that normally goes to stdout
 
-`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
 
 use `opt` or `start` to specify whether it should be a optional package or
@@ -91,7 +91,7 @@ vim-pack remove [-s|--silent] [-d <dir>| --git-dir=<dir>] [<opt|start>] <name>
 
 `-s| --silent` to hide output that normally goes to stdout
 
-`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
 
 Use `opt` or `start` to specify whether the package is an optional package or
@@ -108,7 +108,7 @@ vim-pack list   [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
 
 `-s| --silent` to hide output that normally goes to stdout
 
-`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
 
 If `<file>` is provided then the list of packages will be exported to a file following the INI file format. If the `-s`
@@ -123,7 +123,7 @@ vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>
 
 `-s| --silent` to hide output that normally goes to stdout
 
-`-d <dir> | --git-dir=<dir>` specify the name for the package director by default it is
+`-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
 
 `<file>` is the name of the required INI format file. This can be generated using `vim-pack export` this is useful for

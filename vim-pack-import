@@ -62,7 +62,7 @@ if [[ $usage == true ]]; then
 	echo '        to hide output that normally goes to stdout'
 	echo
 	echo '    -d <dir> | --git-dir=<dir>'
-	echo '        specify the name for the package director by default it is'
+	echo '        specify the name for the package directory by default it is'
 	echo '        $HOME/.vim/pack/git-plugins'
 	echo
 	echo 'note:'
