@@ -1,4 +1,8 @@
 #! /usr/bin/env bash
+has_parallel=true
+if (which parallel); then
+	has_parallel=false
+fi
 repo_dir=$HOME/.vim/pack/git-plugins
 silent=false
 
@@ -6,19 +10,18 @@ silent=false
 # This handles the optional arguments
 ###
 SHORT=hsd:
-LONG=hsilent,git-dir:
+LONG=help,silent,git-dir:
 getopt --test > /dev/null
 supports_long_opts=$(( $? == 4 ))
 if [[ $supports_long_opts == true ]]; then
-	if PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
-		echo 'Failed to parse arguments'
-		exit 2
-	fi
+	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
 else
-	if PARSED=$(getopt --options $SHORT --name "$0" -- "$@"); then
-		echo 'Failed to parse arguments'
-		exit 2
-	fi
+	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
+fi
+
+if (( $? != 0 )); then
+	echo 'Failed to parse arguments'
+	exit 2
 fi
 
 eval set -- "$PARSED"
@@ -26,6 +29,7 @@ while true; do
 	case "$1" in
 		-h|--help)
 			usage=true
+			echo hello
 			break
 			;;
 		-d|--git-dir)

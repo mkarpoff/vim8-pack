@@ -13,15 +13,14 @@ LONG=help,silent,git-dir:
 getopt --test > /dev/null
 supports_long_opts=$(( $? == 4 ))
 if [[ $supports_long_opts == true ]]; then
-	if PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
-		echo 'Failed to parse arguments'
-		exit 2
-	fi
+	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
 else
-	if PARSED=$(getopt --options $SHORT --name "$0" -- "$@"); then
-		echo 'Failed to parse arguments'
-		exit 2
-	fi
+	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
+fi
+
+if (( $? != 0 )); then
+	echo 'Failed to parse arguments'
+	exit 2
 fi
 
 eval set -- "$PARSED"
@@ -92,7 +91,7 @@ for i in {opt,start}; do
 	repos_folders=$(ls "$repo_dir/$i/")
 	for j in $repos_folders; do
 		url=$(git -C "$repo_dir/$i/$j" remote get-url origin)
-		if [[ "$ofile_specified" = true ]]; then
+		if [[ "$ofile_specified" == true ]]; then
 			repo_list+="[$j]\n"
 			repo_list+="	dir = $i/$j\n"
 			repo_list+="	url = $url\n"
