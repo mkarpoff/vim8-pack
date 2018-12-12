@@ -9,7 +9,7 @@ SHORT=hsd:
 LONG=help,silent,git-dir:
 getopt --test > /dev/null
 supports_long_opts=$(( $? == 4 ))
-if [[ $supports_long_opts == true ]]; then
+if [[ $supports_long_opts == 1 ]]; then
 	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
 else
 	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
