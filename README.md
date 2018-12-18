@@ -46,10 +46,15 @@ Clone wherever and place the files somewhere in your path
 ```bash
 vim-pack upgrade [-s|--silent] [-d <dir>| --git-dir=<dir>]
 ```
-`-s| --silent` to hide output that normally goes to stdout
-
 `-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
+`-h | --help` display a really helpful message about how to use the program
+`-s | --silent` to hide output that normally goes to stdout
+`-t | --threads` Cause the script to pull multiple concurently. Will run with <num threads> threads. The default value
+is value is 1 thread per virtual core provided by the command nproc. 
+Note: Only works if moreutils parallel or GNU parallel is installed otherwise it will do nothing 
+`-v | --verbose` Prints out verbose output.
+
 
 ### To get list of upgrades for package
 

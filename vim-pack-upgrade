@@ -1,16 +1,36 @@
 #! /usr/bin/env bash
-has_parallel=true
-if (which parallel); then
-	has_parallel=false
+###
+# Test some variables for setting up options
+###
+# Check if parallel is installed
+has_parallel=false
+if which parallel > /dev/null; then
+	has_parallel=true
 fi
-repo_dir=$HOME/.vim/pack/git-plugins
+
+# Check if parallel is gnu parallel or moreutils
+gnu_parallel=false
+if parallel -V > /dev/null &> /dev/null; then
+	gnu_parallel=true
+fi
+
+# Check number of virtual cores in system and set default number of threads to that
+threads=$(nproc)
+
+repo_dir="$HOME/.vim/pack/git-plugins"
+
+# silent is disabled by default
 silent=false
 
-####
+# verbose is disabled by default
+verbose=false
+
+
+###
 # This handles the optional arguments
 ###
-SHORT=hsd:
-LONG=help,silent,git-dir:
+SHORT=d:ht:sv
+LONG=git-dir:,help,threads:,silent,verbose
 getopt --test > /dev/null
 supports_long_opts=$(( $? == 4 ))
 if [[ $supports_long_opts == 1 ]]; then
@@ -29,7 +49,6 @@ while true; do
 	case "$1" in
 		-h|--help)
 			usage=true
-			echo hello
 			break
 			;;
 		-d|--git-dir)
@@ -39,6 +58,14 @@ while true; do
 		-s|--silent)
 			silent=true
 			shift
+			;;
+		-v|--verbose)
+			verbose=true
+			shift
+			;;
+		-t|--threads)
+			threads=$2
+			shift 2
 			;;
 		--)
 			shift
@@ -50,41 +77,150 @@ while true; do
 			;;
 	esac
 done
+
+# If the help argument is used it prints out the usage statment
 if [[ $usage == true ]]; then
-	echo 'usage: vim-pack upgrade [-s|--silent] [-d <dir>| --git-dir=<dir>]'
+	echo 'usage: vim-pack upgrade [options]'
 	echo
 	echo 'options:'
-	echo '    -s| --silent'
-	echo '        to hide output that normally goes to stdout'
-	echo
 	echo '    -d <dir> | --git-dir=<dir>'
 	echo '        specify the name for the package directory by default it is'
 	echo '        $home/.vim/pack/git-plugins'
+	echo
+	echo '    -h| --help'
+	echo '        displays a really helpful message about how to use the program'
+	echo
+	echo '    -s| --silent'
+	echo '        to hide output that normally goes to stdout'
+	echo
+	echo '    -t| --threads <num threads>'
+	echo '        Cause the script to pull multiple concurently. Will run with'
+	echo '        <num threads> threads. The default value is value is 1 thread per virtual'
+	echo "        core provided by the command nproc. On this system the default is $(nproc) threads"
+	echo
+	echo
+	echo '    -v| --verbose'
+	echo '        Prints out verbose output.'
 	echo
 	echo 'note:'
 	echo '       long options are only available with systems that have an enhanced version'
 	echo '       of getopt.'
 	if [[ $supports_long_opts == true ]]; then
-		echo '       this system does support long options'
+		echo '       This system does support long options'
 	else
-		echo '       this system does not support long options'
+		echo '       This system does not support long options'
+	fi
+	echo
+	echo '       Multithreading works if moreutils parallel xor GNU parallel is installed otherwise it'
+	echo '       will do nothing.'
+	if [[ $has_parallel == true ]] && [[ "$gnu_parallel" == true ]]; then
+		echo '       This system has GNU parallel installed'
+	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
+		echo '       This system has moreutils parallel installed'
+	else
+		echo '       This system has no parallel library installed'
+
 	fi
 	exit 0
 fi
 
+if [[ "$verbose" == true ]]; then
+	echo "package directory: $repo_dir"
+	echo "has parallel:      $has_parallel"
+	echo "has gnu parallel:  $gnu_parallel"
+	echo "number of threads: $threads"
+fi
+
 if [[ "$silent" == true ]]; then
-	for i in {opt,start}; do
-		for j in $repo_dir/$i/*/; do
-			git -C "$j" pull > /dev/null
+	if [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
+		parallel -i -j$threads bash -c  'git -C "{}" pull > /dev/null' -- $repo_dir/{opt,start}/*
+	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == true ]];then
+		parallel -j$threads --nn 'git -C "{}" pull > /dev/null' ::: $repo_dir/{opt,start}/*
+	else
+		for i in {opt,start}; do
+			for j in $repo_dir/$i/*/; do
+				git -C "$j" pull > /dev/null
+			done
 		done
-	done
+	fi
+elif [[ "$verbose" == true ]]; then
+	if [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
+		parallel -i -j$threads \
+		bash -c
+			'out=$(git -C "{}" pull);
+			if ! [[ "$out" =~ "Already up to date." ]];
+			then
+				msg="Updated";
+			else
+				msg="Already up to date";
+			fi;
+			echo -e "git -C {} pull\n$out\n$msg {}"' \
+		-- $repo_dir/{opt,start}/*
+	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == true ]];then
+		parallel -j$threads --nn \
+			'echo "git -C {} pull";
+			out=$(git -C "{}" pull);
+			echo $out;
+			if ! [[ "$out" =~ "Already up to date." ]];
+			then
+				msg="Updated"
+			else
+				msg="Already up to date"
+			fi
+			echo "$msg {}"' \
+			::: $repo_dir/{opt,start}/*
+	else
+		for i in {opt,start}; do
+			for j in $repo_dir/$i/*; do
+				echo "git -C $j pull"
+				git -C "$j" pull
+				out=$(git -C "$j" pull)
+				echo "$out"
+				if [[ "$out" =~ "$git_up_to_date" ]]; then
+					echo "Updated $j"
+				else
+					echo "Already up to date $j"
+				fi
+			done
+		done
+	fi
+	echo "Done updating"
 else
-	for i in {opt,start}; do
-		for j in $repo_dir/$i/*; do
-			echo "$j"
-			git -C "$j" pull
+	if [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
+		parallel -i -j$threads \
+		bash -c \
+			'out=$(git -C "{}" pull);
+			if ! [[ "$out" =~ "Already up to date." ]];
+			then
+				msg="Updated";
+			else
+				msg="Already up to date";
+			fi;
+			echo -e "$msg {}"' \
+		-- $repo_dir/{opt,start}/*
+	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == true ]];then
+		parallel -j$threads --nn \
+			'out=$(git -C "{}" pull);
+			if ! [[ "$out" =~ "Already up to date." ]];
+			then
+				msg="Updated"
+			else
+				msg="Already up to date"
+			fi
+			echo "$msg {}"' \
+			::: $repo_dir/{opt,start}/*
+	else
+		for i in {opt,start}; do
+			for j in $repo_dir/$i/*; do
+				echo "$j"
+				out=$(git -C "$j" pull)
+				if [[ "$out" =~ "$git_up_to_date" ]]; then
+					echo "Updated $j"
+				fi
+			done
 		done
-	done
+	fi
+	echo "Done updating"
 fi
 
 exit 0
