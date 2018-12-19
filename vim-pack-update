@@ -1,12 +1,35 @@
 #! /usr/bin/env bash
+###
+# Test some variables for setting up options
+###
+# Check if parallel is installed
+has_parallel=false
+if which parallel > /dev/null; then
+	has_parallel=true
+fi
+
+# Check if parallel is gnu parallel or moreutils
+gnu_parallel=false
+if parallel -V > /dev/null &> /dev/null; then
+	gnu_parallel=true
+fi
+
+# Check number of virtual cores in system and set default number of threads to that
+threads=$(nproc)
+
+# Repository Directory default location
 repo_dir=$HOME/.vim/pack/git-plugins
+# silent is disabled by default
 silent=false
+
+# verbose is disabled by default
+verbose=false
 
 ####
 # This handles the optional arguments
 ###
-SHORT=hsd:
-LONG=help,silent,git-dir:
+SHORT=d:ht:sv
+LONG=git-dir:,help,threads:,silent,verbose
 getopt --test > /dev/null
 supports_long_opts=$(( $? == 4 ))
 if [[ $supports_long_opts == 1 ]]; then
@@ -31,8 +54,16 @@ while true; do
 			repo_dir=$2
 			shift 2
 			;;
+		-t|--threads)
+			threads=$2
+			shift
+			;;
 		-s|--silent)
 			silent=true
+			shift
+			;;
+		-v|--verbose)
+			verbose=true
 			shift
 			;;
 		--)
@@ -49,12 +80,23 @@ if [[ $usage == true ]]; then
 	echo 'usage: vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>]'
 	echo
 	echo 'options:'
+	echo '    -d <dir> | --git-dir=<dir>'
+	echo '        specify the name for the package directory by default it is'
+	echo '        $HOME/.vim/pack/git-plugins'
+	echo
+	echo '    -h| --help'
+	echo '        displays a really helpful message about how to use the program'
+	echo
 	echo '    -s| --silent'
 	echo '        to hide output that normally goes to stdout'
 	echo
-	echo '    -d <dir> | --git-dir=<dir>'
-	ehco '        specify the name for the package directory by default it is'
-	echo '        $HOME/.vim/pack/git-plugins'
+	echo '    -t| --threads <num threads>'
+	echo '        Cause the script to pull multiple concurently. Will run with'
+	echo '        <num threads> threads. The default value is value is 1 thread per virtual'
+	echo "        core provided by the command nproc. On this system the default is $(nproc) threads"
+	echo
+	echo '    -v| --verbose'
+	echo '        Prints out verbose output.'
 	echo
 	echo 'note:'
 	echo '       long options are only available with systems that have an enhanced version'
@@ -64,35 +106,78 @@ if [[ $usage == true ]]; then
 	else
 		echo '       this system does not support long options'
 	fi
+	echo
+	echo '       Multithreading works if moreutils parallel xor GNU parallel is installed otherwise it'
+	echo '       will do nothing.'
+	if [[ $has_parallel == true ]] && [[ "$gnu_parallel" == true ]]; then
+		echo '       This system has GNU parallel installed'
+	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
+		echo '       This system has moreutils parallel installed'
+	else
+		echo '       This system has no parallel library installed'
+	fi
 	exit 0
 fi
 
 update_count=$(( 0 ))
 update_list=""
 if [[ "$silent" == true ]]; then
-	for i in {opt,start}; do
-		for j in $repo_dir/$i/*/; do
-			git -C "$j" fetch > /dev/null
-			_ahead=$(git -C "$j" rev-list "HEAD..@{u}" | wc -l)
-			if (( _ahead > 0 )); then
-				update_count=$(( update_count + 1 ))
-				update_list="$update_list ${j#"$repo_dir/$i/"}"
-			fi
+	if [[ $has_parallel == true ]] && [[ $gnu_parallel == false ]]; then
+		parallel -i -j$threads bash -c  'git -C "{}" fetch > /dev/null' -- $repo_dir/{opt,start}/*
+	elif [[ $has_parallel == true ]] && [[ $gnu_parallel == true ]]; then
+		parallel -j$threads --nn 'git -C "{}" fetch > /dev/null' ::: $repo_dir/{opt,start}/*
+	else
+		for i in {opt,start}; do
+			for j in $repo_dir/$i/*; do
+				git -C "$j" fetch > /dev/null
+			done
 		done
-	done
+	fi
+elif [[ "$verbose" == true ]]; then
+	if [[ $has_parallel == true ]] && [[ $gnu_parallel == false ]]; then
+		parallel -i -j$threads bash -c \
+			'echo "Checking {}"; echo "git -C "{}" fetch"; git -C "{}" fetch' \
+			-- $repo_dir/{opt,start}/*
+	elif [[ $has_parallel == true ]] && [[ $gnu_parallel == true ]]; then
+		parallel -j$threads --nn \
+			'echo "Checking {}"; echo "git -C "{}" fetch"; git -C "{}" fetch' \
+			::: $repo_dir/{opt,start}/*
+	else
+		for i in {opt,start}; do
+			for j in $repo_dir/$i/*; do
+				echo "$j"
+				git -C "$j" fetch
+			done
+		done
+	fi
 else
-	for i in {opt,start}; do
-		for j in $repo_dir/$i/*; do
-			echo "$j"
-			git -C "$j" fetch
-			_ahead=$(git -C "$j" rev-list 'HEAD..@{u}' | wc -l)
-			if (( _ahead > 0 )); then
-				update_count=$(( update_count + 1 ))
-				update_list="$update_list ${j#"$repo_dir/$i/"}"
-			fi
+	if [[ $has_parallel == true ]] && [[ $gnu_parallel == false ]]; then
+		parallel -i -j$threads bash -c \
+			'echo "Checking {}"; git -C "{}" fetch' \
+			-- $repo_dir/{opt,start}/*
+	elif [[ $has_parallel == true ]] && [[ $gnu_parallel == true ]]; then
+		parallel -j$threads --nn \
+			'echo "Checking {}"; git -C "{}" fetch' \
+			::: $repo_dir/{opt,start}/*
+	else
+		for i in {opt,start}; do
+			for j in $repo_dir/$i/*; do
+				echo "$j"
+				git -C "$j" fetch
+			done
 		done
-	done
+	fi
 fi
+
+for i in {opt,start}; do
+	for j in $repo_dir/$i/*; do
+		_ahead=$(git -C "$j" rev-list "HEAD..@{u}" | wc -l)
+		if (( _ahead > 0 )); then
+			update_count=$(( update_count + 1 ))
+			update_list="$update_list ${j#"$repo_dir/$i/"}"
+		fi
+	done
+done
 if (( update_count > 0 )); then
 	echo 'Updates available for:'
 	echo "  $update_list"
