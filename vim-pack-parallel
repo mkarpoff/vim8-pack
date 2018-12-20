@@ -1,8 +1,8 @@
 #! /usr/bin/env bash
 # Check if parallel is installed
 
-parallel_short_opts="t:gml"
-parallel_long_opts="threads:,gnu-parallel,moreutils-parallel,loop"
+parallel_short_opts="j:gml"
+parallel_long_opts="jobs:,gnu-parallel,moreutils-parallel,loop"
 
 has_gnu=false
 has_more=false
@@ -29,8 +29,8 @@ elif [[ $has_more == true ]] && [[ $has_gnu == false ]]; then
 	use_more=true
 fi
 
-# Check number of virtual cores in system and set default number of threads to that
-threads=$(nproc)
+# Check number of virtual cores in system and set default number of jobs to that
+jobs=$(nproc)
 
 parallel_parse_opt() {
 	case "$1" in
@@ -57,8 +57,8 @@ parallel_parse_opt() {
 			use_more=true
 			return 1
 			;;
-		-t|--threads)
-			threads="$2"
+		-j|--jobs)
+			jobs="$2"
 			return 2
 			;;
 		*)
@@ -68,7 +68,7 @@ parallel_parse_opt() {
 }
 
 _run_more() {
-	$moreutils_parallel -i -j "$threads" \
+	$moreutils_parallel -i -j "$jobs" \
 		bash -c "$1" \
 		-- "${@:2}"
 }
@@ -76,7 +76,7 @@ _run_more() {
 _run_gnu() {
 	cmd="$1"
 	shift
-	parallel -j "$threads" --nn \
+	parallel -j "$jobs" --nn \
 		"$cmd" \
 		::: "${@:2}"
 }

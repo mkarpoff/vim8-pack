@@ -44,39 +44,40 @@ Clone wherever and place the files somewhere in your path
 ### To upgrade package
 
 ```bash
-vim-pack upgrade [-s|--silent] [-d <dir>| --git-dir=<dir>]
+vim-pack upgrade [ options | multithreads options ]
 ```
+options
 `-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
 `-h | --help` display a really helpful message about how to use the program
 `-s | --silent` to hide output that normally goes to stdout
-`-t | --threads` Cause the script to pull multiple concurently. Will run with <num threads> threads. The default value
-is value is 1 thread per virtual core provided by the command nproc. 
-Note: Only works if moreutils parallel or GNU parallel is installed otherwise it will do nothing 
 `-v | --verbose` Prints out verbose output.
 
 
 ### To get list of upgrades for package
 
 ```bash
-vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>]
+vim-pack update [ options | multithreads options ]
 ```
-`-s| --silent` to hide output that normally goes to stdout
-
 `-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
+`-h | --help` display a really helpful message about how to use the program
+`-s | --silent` to hide output that normally goes to stdout
+`-v | --verbose` Prints out verbose output.
 
 
 ### To download a new package
 
 ```bash
-vim-pack get [-s|--silent] [-d <dir>| --git-dir=<dir>] <opt|start> <URL> [<new name>]
-vim-pack install [-s|--silent] [-d <dir>| --git-dir=<dir>] <opt|start> <URL> [<new name>]
+vim-pack get     [ options | multithreaded options ] <opt|start> <URL> [<new name>]
+vim-pack install [ options | multithreaded options ] <opt|start> <URL> [<new name>]
 ```
-`-s| --silent` to hide output that normally goes to stdout
-
 `-d <dir> | --git-dir=<dir>` specify the name for the package directory by default it is
 `$HOME/.vim/pack/git-plugins`
+`-h | --help` display a really helpful message about how to use the program
+`-s | --silent` to hide output that normally goes to stdout
+`-v | --verbose` Prints out verbose output.
+
 
 use `opt` or `start` to specify whether it should be a optional package or
 loaded for every time if you use `opt` you will need to specifically add the

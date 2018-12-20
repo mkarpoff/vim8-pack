@@ -1,6 +1,37 @@
 #! /usr/bin/env bash
 my_dir="$(dirname "$(readlink "$0")")"
+source "$my_dir/vim-pack-parallel"
 source "$my_dir/bash_ini_parser/read_ini.sh"
+
+usage() {
+	echo 'vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>'
+	echo
+	echo '<file> is the name of the required INI format file. This can be generated using vim-pack export this is useful for'
+	echo 'transferring configurations between machines.'
+	echo 
+	echo 'options:'
+	echo '    -s| --silent'
+	echo '        to hide output that normally goes to stdout'
+	echo
+	echo '    -d <dir> | --git-dir=<dir>'
+	echo '        specify the name for the package directory by default it is'
+	echo '        $HOME/.vim/pack/git-plugins'
+	echo
+	parallel_usage_options
+	echo
+	echo 'note:'
+	echo '       long options are only available with systems that have an enhanced version'
+	echo '       of getopt.'
+	if [[ $supports_long_opts == true ]]; then
+		echo '       this system does support long options'
+	else
+		echo '       this system does not support long options'
+	fi
+	parallel_usage_notes
+	echo
+	exit "$1"
+}
+
 repo_dir=$HOME/.vim/pack/git-plugins
 silent=false
 
@@ -9,24 +40,31 @@ silent=false
 # This handles the optional arguments
 ###
 
-SHORT=hsd:
-LONG=help,silent,git-dir:
+SHORT="hsd:$parallel_short_opts"
+LONG="help,silent,git-dir:$parallel_long_opts"
 
 getopt --test > /dev/null
 supports_long_opts=$(( $? == 4 ))
 if [[ $supports_long_opts == 1 ]]; then
-	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
+	if ! PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		usage 1
+	fi
 else
-	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
-fi
-
-if (( $? != 0 )); then
-	echo 'Failed to parse arguments'
-	exit 2
+	if ! PARSED=$(getopt --options $SHORT --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		usage 1
+	fi
 fi
 
 eval set -- "$PARSED"
 while true; do
+	parallel_parse_opt "$@"
+	ret=$?
+	if (( ret != 0 )); then
+		shift $ret
+		continue
+	fi
 	case "$1" in
 		-h|--help)
 			usage=true
@@ -44,36 +82,8 @@ while true; do
 			shift
 			break
 			;;
-		*)
-			break
-			;;
 	esac
 done
-
-if [[ $usage == true ]]; then
-	echo 'vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>'
-	echo
-	echo '<file> is the name of the required INI format file. This can be generated using vim-pack export this is useful for'
-	echo 'transferring configurations between machines.'
-	echo 
-	echo 'options:'
-	echo '    -s| --silent'
-	echo '        to hide output that normally goes to stdout'
-	echo
-	echo '    -d <dir> | --git-dir=<dir>'
-	echo '        specify the name for the package directory by default it is'
-	echo '        $HOME/.vim/pack/git-plugins'
-	echo
-	echo 'note:'
-	echo '       long options are only available with systems that have an enhanced version'
-	echo '       of getopt.'
-	if [[ $supports_long_opts == true ]]; then
-		echo '       this system does support long options'
-	else
-		echo '       this system does not support long options'
-	fi
-	exit 0
-fi
 
 import_file=$1
 read_ini "$import_file"

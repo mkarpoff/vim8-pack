@@ -7,7 +7,6 @@
     {"name":"vim-pack-export",  "target":"~/.local/bin/vim-pack-export"},
     {"name":"vim-pack-import",  "target":"~/.local/bin/vim-pack-import"},
     {"name":"vim-pack-sync",    "target":"~/.local/bin/vim-pack-sync"},
-    {"name":"vim-pack-parallel","target":"~/.local/bin/vim-pack-parallel"},
     {"name":"bash_completion",  "target":"~/.bash_completion"},
     {"name":"vim-pack-complete","target":"~/.bash_completion.d/vim-pack-complete"}
 ]

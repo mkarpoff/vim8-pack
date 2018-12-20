@@ -98,5 +98,11 @@ if [[ "$silent" == true ]]; then
 else
 	git clone "$repo_target" "$dest_name"
 fi
+if [[ $? != 0 ]]; then
+	exit $?
+fi
 
-exit $?
+if [[ -d "$dest_name/doc" ]]; then
+	vim +"helptags $dest_name/doc/" +qall
+fi
+exit 0
