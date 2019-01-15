@@ -2,6 +2,11 @@
 ###
 # Test some variables for setting up options
 ###
+supports_long_opts=false
+getopt --test > /dev/null
+if (( $? == 4 )); then
+	supports_long_opts=true
+fi
 
 # Pull in code from parallel interface
 my_dir="$(dirname "$(readlink "$0")")"
@@ -57,9 +62,7 @@ verbose=false
 ###
 SHORT="d:hsv$parallel_short_opts"
 LONG="git-dir:,help,silent,verbose,$parallel_long_opts"
-getopt --test > /dev/null
-supports_long_opts=$(( $? == 4 ))
-if [[ $supports_long_opts == 1 ]]; then
+if [[ $supports_long_opts == true ]]; then
 	if ! PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
 		echo 'Failed to parse arguments'
 		usage 1

@@ -2,6 +2,11 @@
 my_dir="$(dirname "$(readlink "$0")")"
 source "$my_dir/vim-pack-parallel"
 source "$my_dir/bash_ini_parser/read_ini.sh"
+supports_long_opts=false
+getopt --test > /dev/null
+if (( $? == 4 )); then
+	supports_long_opts=true
+fi
 
 usage() {
 	echo 'vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>'
@@ -34,6 +39,7 @@ usage() {
 
 repo_dir=$HOME/.vim/pack/git-plugins
 silent=false
+supports_long_opts=false
 
 
 ####
@@ -43,9 +49,7 @@ silent=false
 SHORT="d:hsv$parallel_short_opts"
 LONG="git-dir:,help,silent,verbose,$parallel_long_opts"
 
-getopt --test > /dev/null
-supports_long_opts=$(( $? == 4 ))
-if [[ $supports_long_opts == 1 ]]; then
+if [[ $supports_long_opts == true ]]; then
 	if ! PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
 		echo 'Failed to parse arguments'
 		usage 1

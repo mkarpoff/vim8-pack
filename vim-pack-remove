@@ -1,6 +1,12 @@
 #! /usr/bin/env bash
 repo_dir="$HOME/.vim/pack/git-plugins"
 silent=false
+supports_long_opts=false
+
+getopt --test > /dev/null
+if (( $? == 4 )); then
+	supports_long_opts=true
+fi
 
 
 ####
@@ -9,9 +15,7 @@ silent=false
 
 SHORT=hsd:
 LONG=help,silent,git-dir:
-getopt --test > /dev/null
-supports_long_opts=$(( $? == 4 ))
-if [[ $supports_long_opts == 1 ]]; then
+if [[ $supports_long_opts == true ]]; then
 	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
 else
 	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")

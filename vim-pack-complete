@@ -48,7 +48,7 @@ _vim_pack_tab_complete() {
 		# Handle --xxxxx=path
 		if [[ "$prev" == '=' ]] ; then
 			# Unescape space
-			cur=$(realpath "${cur//\\ / }" 2&> /dev/null)
+			cur=$(realpath "${cur//\\ / }")
 			# Show completion if path exist (and escape spaces)
 			compopt -o filenames
 			local files=("${cur}"*)
@@ -60,7 +60,7 @@ _vim_pack_tab_complete() {
 			words="$words -d --git-dir="
 		else
 			if [[ "$prev" == "-d" ]];then
-				cur=$(realpath "${cur//\\ / }" 2&> /dev/null)
+				cur=$(realpath "${cur//\\ / }")
 				# Show completion if path exist (and escape spaces)
 				compopt -o filenames
 				local files=("${cur}"*)
@@ -99,7 +99,7 @@ _vim_pack_tab_complete() {
 			list)
 				if [[ "$(compgen -W "${words}" -- "${cur}")" == '' ]]; then
 					# Expand tilder to $HOME
-					cur=$(realpath "${cur//\\ / }" 2&> /dev/null)
+					cur=$(realpath "${cur//\\ / }")
 					# Show completion if path exist (and escape spaces)
 					compopt -o filenames
 					local files=("${cur}"*)
@@ -133,7 +133,7 @@ _vim_pack_tab_complete() {
 			export)
 				if [[ "$(compgen -W "${words}" -- "${cur}")" == '' ]]; then
 					# Expand tilder to $HOME
-					cur=$(realpath "${cur//\\ / }" 2&> /dev/null)
+					cur=$(realpath "${cur//\\ / }")
 					# Show completion if path exist (and escape spaces)
 					compopt -o filenames
 					local files=("${cur}"*)
@@ -142,12 +142,12 @@ _vim_pack_tab_complete() {
 				fi
 				;;
 			import)
-				#if contains COMP_WORDS '-g' '--gnu-parallel' '-m' '--more-parallel' '-l' '--loop'; then
-				#	words="$words -g --gnu-parallel -m --more-parallel -l --loop"
-				#fi
+				if contains COMP_WORDS '-g' '--gnu-parallel' '-m' '--more-parallel' '-l' '--loop'; then
+					words="$words -g --gnu-parallel -m --more-parallel -l --loop"
+				fi
 				if [[ "$(compgen -W "${words}" -- "${cur}")" == "" ]]; then
 					# Expand tilder to $HOME
-					cur=$(realpath "${cur//\\ / }" 2&> /dev/null)
+					cur=$(realpath "${cur//\\ / }")
 					# Show completion if path exist (and escape spaces)
 					compopt -o filenames
 					local files=("${cur}"*)
@@ -161,7 +161,7 @@ _vim_pack_tab_complete() {
 				fi
 				if [[ "$(compgen -W "${words}" -- "${cur}")" == "" ]]; then
 					# Expand tilder to $HOME
-					cur=$(realpath "${cur//\\ / }" 2&> /dev/null)
+					cur=$(realpath "${cur//\\ / }")
 					# Show completion if path exist (and escape spaces)
 					compopt -o filenames
 					local files=("${cur}"*)
