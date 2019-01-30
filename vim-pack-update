@@ -1,60 +1,39 @@
 #! /usr/bin/env bash
-repo_dir=$HOME/.vim/pack/git-plugins
-silent=false
-
-####
-# This handles the optional arguments
 ###
-SHORT=hsd:
-LONG=help,silent,git-dir:
+# Test some variables for setting up options
+###
+supports_long_opts=false
 getopt --test > /dev/null
-supports_long_opts=$(( $? == 4 ))
-if [[ $supports_long_opts == 1 ]]; then
-	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
-else
-	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
+if (( $? == 4 )); then
+	supports_long_opts=true
 fi
 
-if (( $? != 0 )); then
-	echo 'Failed to parse arguments'
-	exit 2
-fi
+# Pull in code from parallel interface
+my_dir="$(dirname "$(readlink "$0")")"
+source "$my_dir/vim-pack-parallel"
 
-eval set -- "$PARSED"
-while true; do
-	case "$1" in
-		-h|--help)
-			usage=true
-			break
-			;;
-		-d|--git-dir)
-			repo_dir=$2
-			shift 2
-			;;
-		-s|--silent)
-			silent=true
-			shift
-			;;
-		--)
-			shift
-			break
-			;;
-		*)
-			echo "Unknown argument: " "$1"
-			exit 3
-			;;
-	esac
-done
-if [[ $usage == true ]]; then
+###
+# Prints the Usage message and exist return the first arg as return code
+###
+usage() {
 	echo 'usage: vim-pack update [-s|--silent] [-d <dir>| --git-dir=<dir>]'
 	echo
 	echo 'options:'
+	echo 'general options:'
+	echo '    -d <dir> | --git-dir=<dir>'
+	echo '        specify the name for the package directory by default it is'
+	echo '        $HOME/.vim/pack/git-plugins'
+	echo
+	echo '    -h| --help'
+	echo '        displays a really helpful message about how to use the program'
+	echo
 	echo '    -s| --silent'
 	echo '        to hide output that normally goes to stdout'
 	echo
-	echo '    -d <dir> | --git-dir=<dir>'
-	ehco '        specify the name for the package directory by default it is'
-	echo '        $HOME/.vim/pack/git-plugins'
+	echo '    -v| --verbose'
+	echo '        Prints out verbose output.'
+	echo
+	parallel_usage_options
 	echo
 	echo 'note:'
 	echo '       long options are only available with systems that have an enhanced version'
@@ -64,35 +43,90 @@ if [[ $usage == true ]]; then
 	else
 		echo '       this system does not support long options'
 	fi
-	exit 0
+	parallel_usage_notes
+	echo
+	exit "$1"
+}
+
+# Repository Directory default location
+repo_dir="$HOME/.vim/pack/git-plugins"
+
+# silent is disabled by default
+silent=false
+
+# verbose is disabled by default
+verbose=false
+
+####
+# This handles the optional arguments
+###
+SHORT="d:hsv$parallel_short_opts"
+LONG="git-dir:,help,silent,verbose,$parallel_long_opts"
+if [[ $supports_long_opts == true ]]; then
+	if ! PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		usage 1
+	fi
+else
+	if ! PARSED=$(getopt --options $SHORT --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		usage 1
+	fi
 fi
+
+eval set -- "$PARSED"
+while true; do
+	parallel_parse_opt "$@"
+	ret=$?
+	if (( ret != 0 )); then
+		shift $ret
+		continue
+	fi
+	case "$1" in
+		-h|--help)
+			usage 0
+			;;
+		-d|--git-dir)
+			repo_dir=$2
+			shift 2
+			;;
+		-s|--silent)
+			silent=true
+			shift
+			;;
+		-v|--verbose)
+			verbose=true
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+	esac
+done
 
 update_count=$(( 0 ))
 update_list=""
 if [[ "$silent" == true ]]; then
-	for i in {opt,start}; do
-		for j in $repo_dir/$i/*/; do
-			git -C "$j" fetch > /dev/null
-			_ahead=$(git -C "$j" rev-list "HEAD..@{u}" | wc -l)
-			if (( _ahead > 0 )); then
-				update_count=$(( update_count + 1 ))
-				update_list="$update_list ${j#"$repo_dir/$i/"}"
-			fi
-		done
-	done
+	cmd='git -C "{}" fetch > /dev/null'
+elif [[ "$verbose" == true ]]; then
+	cmd='out=$(git -C "{}" fetch); echo -e "git -C "{}" fetch\nChecked {}$out"'
 else
-	for i in {opt,start}; do
-		for j in $repo_dir/$i/*; do
-			echo "$j"
-			git -C "$j" fetch
-			_ahead=$(git -C "$j" rev-list 'HEAD..@{u}' | wc -l)
-			if (( _ahead > 0 )); then
-				update_count=$(( update_count + 1 ))
-				update_list="$update_list ${j#"$repo_dir/$i/"}"
-			fi
-		done
-	done
+	cmd='out=$(git -C "{}" fetch); echo -e "Checked {}$out"'
 fi
+parallel_run "$cmd" $repo_dir/{opt,start}/*
+
+# Don't know how to parallelize this but it takes very little time anyways so...
+for i in {opt,start}; do
+	for j in $repo_dir/$i/*; do
+		_ahead=$(git -C "$j" rev-list "HEAD..@{u}" | wc -l)
+		if (( _ahead > 0 )); then
+			update_count=$(( update_count + 1 ))
+			update_list="$update_list ${j#"$repo_dir/$i/"}"
+		fi
+	done
+done
+
 if (( update_count > 0 )); then
 	echo 'Updates available for:'
 	echo "  $update_list"

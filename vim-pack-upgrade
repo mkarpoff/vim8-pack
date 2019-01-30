@@ -2,21 +2,54 @@
 ###
 # Test some variables for setting up options
 ###
-# Check if parallel is installed
-has_parallel=false
-if which parallel > /dev/null; then
-	has_parallel=true
+
+supports_long_opts=false
+getopt --test > /dev/null
+if (( $? == 4 )); then
+	supports_long_opts=true
 fi
 
-# Check if parallel is gnu parallel or moreutils
-gnu_parallel=false
-if parallel -V > /dev/null &> /dev/null; then
-	gnu_parallel=true
-fi
+# Pull in code from parallel interface
+my_dir="$(dirname "$(readlink "$0")")"
+source "$my_dir/vim-pack-parallel"
 
-# Check number of virtual cores in system and set default number of threads to that
-threads=$(nproc)
+###
+# Prints the Usage message and exist return the first arg as return code
+###
+usage() {
+	echo 'usage: vim-pack upgrade [options]'
+	echo
+	echo 'options:'
+	echo 'general options:'
+	echo '    -d <dir> | --git-dir=<dir>'
+	echo '        specify the name for the package directory by default it is'
+	echo "        $HOME/.vim/pack/git-plugins"
+	echo
+	echo '    -h| --help'
+	echo '        displays a really helpful message about how to use the program'
+	echo
+	echo '    -s| --silent'
+	echo '        to hide output that normally goes to stdout'
+	echo
+	echo '    -v| --verbose'
+	echo '        Prints out verbose output.'
+	echo
+	parallel_usage_options
+	echo
+	echo 'note:'
+	echo '       long options are only available with systems that have an enhanced version'
+	echo '       of getopt.'
+	if [[ $supports_long_opts == true ]]; then
+		echo '       This system does support long options'
+	else
+		echo '       This system does not support long options'
+	fi
+	parallel_usage_notes
+	echo
+	exit "$1"
+}
 
+# Repository Directory default location
 repo_dir="$HOME/.vim/pack/git-plugins"
 
 # silent is disabled by default
@@ -29,27 +62,32 @@ verbose=false
 ###
 # This handles the optional arguments
 ###
-SHORT=d:ht:sv
-LONG=git-dir:,help,threads:,silent,verbose
-getopt --test > /dev/null
-supports_long_opts=$(( $? == 4 ))
-if [[ $supports_long_opts == 1 ]]; then
-	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
-else
-	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
-fi
+SHORT="d:hsv$parallel_short_opts"
+LONG="git-dir:,help,silent,verbose,$parallel_long_opts"
 
-if (( $? != 0 )); then
-	echo 'Failed to parse arguments'
-	exit 2
+if [[ $supports_long_opts == true ]]; then
+	if ! PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		usage 1
+	fi
+else
+	if ! PARSED=$(getopt --options $SHORT --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		usage 1
+	fi
 fi
 
 eval set -- "$PARSED"
 while true; do
+	parallel_parse_opt "$@"
+	ret=$?
+	if (( ret != 0 )); then
+		shift $ret
+		continue
+	fi
 	case "$1" in
 		-h|--help)
-			usage=true
-			break
+			usage 0
 			;;
 		-d|--git-dir)
 			repo_dir=$2
@@ -63,164 +101,49 @@ while true; do
 			verbose=true
 			shift
 			;;
-		-t|--threads)
-			threads=$2
-			shift 2
-			;;
 		--)
 			shift
 			break
 			;;
-		*)
-			echo "Unknown argument: " "$1"
-			exit 3
-			;;
 	esac
 done
 
-# If the help argument is used it prints out the usage statment
-if [[ $usage == true ]]; then
-	echo 'usage: vim-pack upgrade [options]'
-	echo
-	echo 'options:'
-	echo '    -d <dir> | --git-dir=<dir>'
-	echo '        specify the name for the package directory by default it is'
-	echo '        $home/.vim/pack/git-plugins'
-	echo
-	echo '    -h| --help'
-	echo '        displays a really helpful message about how to use the program'
-	echo
-	echo '    -s| --silent'
-	echo '        to hide output that normally goes to stdout'
-	echo
-	echo '    -t| --threads <num threads>'
-	echo '        Cause the script to pull multiple concurently. Will run with'
-	echo '        <num threads> threads. The default value is value is 1 thread per virtual'
-	echo "        core provided by the command nproc. On this system the default is $(nproc) threads"
-	echo
-	echo
-	echo '    -v| --verbose'
-	echo '        Prints out verbose output.'
-	echo
-	echo 'note:'
-	echo '       long options are only available with systems that have an enhanced version'
-	echo '       of getopt.'
-	if [[ $supports_long_opts == true ]]; then
-		echo '       This system does support long options'
-	else
-		echo '       This system does not support long options'
-	fi
-	echo
-	echo '       Multithreading works if moreutils parallel xor GNU parallel is installed otherwise it'
-	echo '       will do nothing.'
-	if [[ $has_parallel == true ]] && [[ "$gnu_parallel" == true ]]; then
-		echo '       This system has GNU parallel installed'
-	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
-		echo '       This system has moreutils parallel installed'
-	else
-		echo '       This system has no parallel library installed'
-
-	fi
-	exit 0
-fi
-
 if [[ "$verbose" == true ]]; then
-	echo "package directory: $repo_dir"
-	echo "has parallel:      $has_parallel"
-	echo "has gnu parallel:  $gnu_parallel"
-	echo "number of threads: $threads"
+	echo "Package directory:      $repo_dir"
+	echo "Has moreutils parallel: $has_more"
+	echo "Has gnu parallel:       $has_gnu"
+	echo "Number of threads:      $threads"
+	if [[ "$use_more" == true ]]; then
+		echo "Using run method:       moreutils parallel"
+	elif [[ "$use_gnu" == true ]]; then
+		echo "Using run method:       GNU parallel"
+	else
+		echo "Using run method:       iterative loop"
+	fi
 fi
 
 if [[ "$silent" == true ]]; then
-	if [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
-		parallel -i -j$threads bash -c  'git -C "{}" pull > /dev/null' -- $repo_dir/{opt,start}/*
-	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == true ]];then
-		parallel -j$threads --nn 'git -C "{}" pull > /dev/null' ::: $repo_dir/{opt,start}/*
-	else
-		for i in {opt,start}; do
-			for j in $repo_dir/$i/*/; do
-				git -C "$j" pull > /dev/null
-			done
-		done
-	fi
+	cmd='git -C "{}" pull > /dev/null'
 elif [[ "$verbose" == true ]]; then
-	if [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
-		parallel -i -j$threads \
-		bash -c
-			'out=$(git -C "{}" pull);
-			if ! [[ "$out" =~ "Already up to date." ]];
-			then
-				msg="Updated";
-			else
-				msg="Already up to date";
-			fi;
-			echo -e "git -C {} pull\n$out\n$msg {}"' \
-		-- $repo_dir/{opt,start}/*
-	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == true ]];then
-		parallel -j$threads --nn \
-			'echo "git -C {} pull";
-			out=$(git -C "{}" pull);
-			echo $out;
-			if ! [[ "$out" =~ "Already up to date." ]];
-			then
-				msg="Updated"
-			else
-				msg="Already up to date"
-			fi
-			echo "$msg {}"' \
-			::: $repo_dir/{opt,start}/*
+	cmd='out=$(git -C "{}" pull);
+	if ! [[ "$out" =~ "Already up to date." ]];
+	then
+		msg="Updated"
 	else
-		for i in {opt,start}; do
-			for j in $repo_dir/$i/*; do
-				echo "git -C $j pull"
-				git -C "$j" pull
-				out=$(git -C "$j" pull)
-				echo "$out"
-				if [[ "$out" =~ "$git_up_to_date" ]]; then
-					echo "Updated $j"
-				else
-					echo "Already up to date $j"
-				fi
-			done
-		done
+		msg="Already up to date"
 	fi
-	echo "Done updating"
+	echo -e "git -C {} pull\n$out\n$msg {}"'
 else
-	if [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == false ]]; then
-		parallel -i -j$threads \
-		bash -c \
-			'out=$(git -C "{}" pull);
-			if ! [[ "$out" =~ "Already up to date." ]];
-			then
-				msg="Updated";
-			else
-				msg="Already up to date";
-			fi;
-			echo -e "$msg {}"' \
-		-- $repo_dir/{opt,start}/*
-	elif [[ "$has_parallel" == true ]] && [[ "$gnu_parallel" == true ]];then
-		parallel -j$threads --nn \
-			'out=$(git -C "{}" pull);
-			if ! [[ "$out" =~ "Already up to date." ]];
-			then
-				msg="Updated"
-			else
-				msg="Already up to date"
-			fi
-			echo "$msg {}"' \
-			::: $repo_dir/{opt,start}/*
+	cmd='out=$(git -C "{}" pull)
+	if ! [[ "$out" =~ "Already up to date." ]]; then
+		msg="Updated"
 	else
-		for i in {opt,start}; do
-			for j in $repo_dir/$i/*; do
-				echo "$j"
-				out=$(git -C "$j" pull)
-				if [[ "$out" =~ "$git_up_to_date" ]]; then
-					echo "Updated $j"
-				fi
-			done
-		done
+		msg="Already up to date"
 	fi
-	echo "Done updating"
+	echo "$msg {}"'
 fi
+
+parallel_run "$cmd" $repo_dir/{opt,start}/*
+echo "Done updating"
 
 exit 0

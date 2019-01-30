@@ -1,68 +1,28 @@
 #! /usr/bin/env bash
 my_dir="$(dirname "$(readlink "$0")")"
+source "$my_dir/vim-pack-parallel"
 source "$my_dir/bash_ini_parser/read_ini.sh"
-repo_dir=$HOME/.vim/pack/git-plugins
-silent=false
-
-
-####
-# This handles the optional arguments
-###
-
-SHORT=hsd:
-LONG=help,silent,git-dir:
-
+supports_long_opts=false
 getopt --test > /dev/null
-supports_long_opts=$(( $? == 4 ))
-if [[ $supports_long_opts == 1 ]]; then
-	PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
-else
-	PARSED=$(getopt --options $SHORT --name "$0" -- "$@")
+if (( $? == 4 )); then
+	supports_long_opts=true
 fi
 
-if (( $? != 0 )); then
-	echo 'Failed to parse arguments'
-	exit 2
-fi
-
-eval set -- "$PARSED"
-while true; do
-	case "$1" in
-		-h|--help)
-			usage=true
-			break
-			;;
-		-d|--git-dir)
-			repo_dir=$2
-			shift 2
-			;;
-		-s|--silent)
-			silent=true
-			shift
-			;;
-		--)
-			shift
-			break
-			;;
-		*)
-			break
-			;;
-	esac
-done
-
-if [[ $usage == true ]]; then
+usage() {
 	echo 'vim-pack import [-s|--silent] [-d <dir>| --git-dir=<dir>] <file>'
 	echo
 	echo '<file> is the name of the required INI format file. This can be generated using vim-pack export this is useful for'
 	echo 'transferring configurations between machines.'
-	echo 
+	echo
 	echo 'options:'
 	echo '    -s| --silent'
 	echo '        to hide output that normally goes to stdout'
 	echo
 	echo '    -d <dir> | --git-dir=<dir>'
 	echo '        specify the name for the package directory by default it is'
-	echo '        $HOME/.vim/pack/git-plugins'
+	echo "        $HOME/.vim/pack/git-plugins"
+	echo
+	parallel_usage_options
 	echo
 	echo 'note:'
 	echo '       long options are only available with systems that have an enhanced version'
@@ -72,22 +32,114 @@ if [[ $usage == true ]]; then
 	else
 		echo '       this system does not support long options'
 	fi
-	exit 0
+	parallel_usage_notes
+	echo
+	exit "$1"
+}
+
+repo_dir=$HOME/.vim/pack/git-plugins
+silent=false
+supports_long_opts=false
+
+
+####
+# This handles the optional arguments
+###
+
+SHORT="d:hsv$parallel_short_opts"
+LONG="git-dir:,help,silent,verbose,$parallel_long_opts"
+
+if [[ $supports_long_opts == true ]]; then
+	if ! PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		usage 1
+	fi
+else
+	if ! PARSED=$(getopt --options $SHORT --name "$0" -- "$@"); then
+		echo 'Failed to parse arguments'
+		usage 1
+	fi
 fi
 
-import_file=$1
-read_ini "$import_file"
-
-for sec in ${INI__ALL_SECTIONS}; do
-	v="INI__${sec}__url"
-	repo_target=${!v}
-	v="INI__${sec}__dir"
-	dest_name=${!v}
-	if [ "$silent" == true ]; then
-		git clone "$repo_target" "$repo_dir/$dest_name" > /dev/null
-	else
-		git clone "$repo_target" "$repo_dir/$dest_name"
+eval set -- "$PARSED"
+while true; do
+	parallel_parse_opt "$@"
+	ret=$?
+	if (( ret != 0 )); then
+		shift $ret
+		continue
 	fi
+	case "$1" in
+		-h|--help)
+			usage 0
+			;;
+		-d|--git-dir)
+			repo_dir=$2
+			shift 2
+			;;
+		-s|--silent)
+			silent=true
+			shift
+			;;
+		-v|--verbose)
+			verbose=true
+			shift
+			;;
+		--)
+			shift
+			break
+			;;
+	esac
 done
 
-exit $?
+import_file=$1
+if ! [[ -f "$import_file" ]]; then
+	echo "Import file does not exist. [ $import_file ]"
+	exit 1
+fi
+read_ini "$import_file"
+if [[ $use_more == true ]] || [[ $use_gnu == true ]]; then
+	if [[ $silent == true ]]; then
+		cmd='source "'$my_dir'/bash_ini_parser/read_ini.sh"
+		read_ini "'$import_file'"
+		repo_target=${INI__{}__url}
+		dest_name=${INI__{}__dir}
+		git clone "$repo_target" "'$repo_dir'/$dest_name" > /dev/null'
+	elif [[ $verbose == true ]]; then
+		cmd='source "'$my_dir'/bash_ini_parser/read_ini.sh"
+		read_ini "'$import_file'"
+		repo_target=${INI__{}__url}
+		dest_name=${INI__{}__dir}
+		out=$(git clone "$repo_target" "'$repo_dir'/$dest_name")
+		echo -e "git clone $repo_target '$repo_dir'/$dest_name\n$out"'
+	else
+		cmd='source "'$my_dir'/bash_ini_parser/read_ini.sh"
+		read_ini "'$import_file'"
+		repo_target=${INI__{}__url}
+		dest_name=${INI__{}__dir}
+		echo git clone "$repo_target" "'$repo_dir'/$dest_name"
+		git clone "$repo_target" "'$repo_dir'/$dest_name" > /dev/null'
+	fi
+
+	parallel_run "$cmd" ${INI__ALL_SECTIONS}
+else
+	for sec in ${INI__ALL_SECTIONS}; do
+		v="INI__${sec}__url"
+		repo_target=${!v}
+		v="INI__${sec}__dir"
+		dest_name=${!v}
+		if [[ $silent == true ]]; then
+			git clone "$repo_target" "$repo_dir/$dest_name" > /dev/null
+		elif [[ $verbose == true ]]; then
+			echo -e "git clone $repo_target $repo_dir/$dest_name"
+			git clone "$repo_target" "$repo_dir/$dest_name"
+		else
+			echo "git clone $repo_target $repo_dir/$dest_name"
+			git clone "$repo_target" "$repo_dir/$dest_name" > /dev/null
+		fi
+	done
+fi
+
+echo "Import done"
+
+exit 0

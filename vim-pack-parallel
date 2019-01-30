@@ -1,0 +1,130 @@
+#! /usr/bin/env bash
+# Check if parallel is installed
+
+parallel_short_opts="j:gml"
+parallel_long_opts="jobs:,gnu-parallel,moreutils-parallel,loop"
+
+has_gnu=false
+has_more=false
+use_gnu=false
+use_more=false
+
+if which parallel > /dev/null; then
+	# Check if parallel is gnu parallel or moreutils
+	if parallel -V > /dev/null &> /dev/null; then
+		has_gnu=true
+	else
+		has_more=true
+		moreutils_parallel=parallel
+	fi
+	if which parallel.moreutils > /dev/null; then
+		has_more=true
+		moreutils_parallel=parallel.moreutils
+	fi
+fi
+
+if [[ $has_more == true ]] && [[ $has_gnu == true ]]; then
+	use_gnu=true
+elif [[ $has_more == true ]] && [[ $has_gnu == false ]]; then
+	use_more=true
+fi
+
+# Check number of virtual cores in system and set default number of jobs to that
+jobs=$(nproc)
+
+parallel_parse_opt() {
+	case "$1" in
+		-g|--gnu-parallel)
+			if [[ "$has_gnu" == false ]]; then
+				echo "GNU Parallel not installed"
+				exit 1
+			fi
+			use_gnu=true
+			use_more=false
+			return 1
+			;;
+		-l|--loop)
+			use_gnu=false
+			use_more=false
+			return 1
+			;;
+		-m|--moreutils-parallel)
+			if [[ "$has_more" == false ]]; then
+				echo "Moreutils Parallel not installed"
+				exit 1
+			fi
+			use_gnu=false
+			use_more=true
+			return 1
+			;;
+		-j|--jobs)
+			jobs="$2"
+			return 2
+			;;
+		*)
+			return 0
+			;;
+	esac
+}
+
+_run_more() {
+	$moreutils_parallel -i -j "$jobs" \
+		bash -c "$1" \
+		-- "${@:2}"
+}
+
+_run_gnu() {
+	cmd="$1"
+	shift
+	parallel -j "$jobs" --nn \
+		"$cmd" \
+		::: "${@:2}"
+}
+
+_run_loop() {
+	for i in "${@:2}";
+	do
+		bash -c "${1//\{\}/$i}"
+	done
+}
+
+parallel_run() {
+	if [[ $use_more == true ]]; then
+		_run_more "$@"
+	elif [[ $use_gnu == true ]]; then
+		_run_gnu "$@"
+	else
+		_run_loop "$@"
+	fi
+}
+
+parallel_usage_options() {
+	echo 'multithreading options:'
+	echo '    -j| --jobs <num jobs>'
+	echo '        Will run with <num jobs> jobs. The default value is value is 1 job per virtual'
+	echo "        core provided by the command nproc. On this system the default is $(nproc) jobs"
+	echo '        if -l|--loop flag is provided this flag does nothing'
+	echo
+	echo '    -g|--gnu-parallel'
+	echo '        Use GNU parallel library to run code concurently'
+	echo
+	echo '    -l|--loop'
+	echo '        Run code in an itterative loop'
+	echo
+	echo '    -m|--moreutils-parallel'
+	echo '        Use moreutils parallel library to run code concurently'
+}
+
+parallel_usage_notes() {
+	echo '       Multithreading works if moreutils parallel xor GNU parallel is installed otherwise it'
+	echo '       will do nothing.'
+	if [[ $has_gnu == true ]]; then
+		echo '       This system has GNU parallel installed'
+	fi
+	if [[ $has_more == true ]]; then
+		echo '       This system has moreutils parallel installed'
+	fi
+	if [[ $has_more == false ]] && [[ $has_gnu == false ]]; then
+		echo '       This system has no parallel library installed'
+	fi
+}
