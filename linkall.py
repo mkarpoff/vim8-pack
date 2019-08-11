@@ -5,7 +5,7 @@ import json
 import sys
 if sys.version_info[0] < 3 or sys.version_info[1] < 5:
     raise "Must be greater than or equal to Python 3.5 to run this script"
-name="name"
+name="source"
 target="target"
 
 with open("files.json") as data_files:
